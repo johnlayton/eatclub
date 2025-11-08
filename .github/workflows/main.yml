@@ -20,10 +20,10 @@ jobs:
           distribution: 'corretto'
 
       - name: Build with Maven
-        run: ./mvnw --errors clean verify
+        run: ./mvnw --batch-mode --errors clean verify
 
       - name: Test with Maven
-        run: ./mvnw --errors test
+        run: ./mvnw --batch-mode --errors test
 
       - name: Upload test results
         if: always()

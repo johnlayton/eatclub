@@ -1,7 +1,6 @@
 package com.eatclub.deal;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
@@ -10,7 +9,7 @@ import java.util.List;
 
 public record Restaurants(List<Restaurant> restaurants) {
     public record Time(
-            @JsonValue @JsonFormat(pattern = "h:mm")
+            @JsonValue
             @JsonDeserialize(using = LocalTimeDeserializer.class)
             LocalTime value) implements Comparable<Time> {
         @Override

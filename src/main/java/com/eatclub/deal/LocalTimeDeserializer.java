@@ -10,14 +10,9 @@ import java.time.format.DateTimeFormatter;
 
 public class LocalTimeDeserializer  extends JsonDeserializer<LocalTime> {
 
-    private final DateTimeFormatter formatter;
-
-    public LocalTimeDeserializer() {
-        this.formatter = DateTimeFormatter.ofPattern("h:mma");
-    }
-
     @Override
     public LocalTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        return LocalTime.parse(p.getText(), formatter);
+        System.out.println("Deserializing time: " + p.getText());
+        return LocalTime.parse(p.getText(), DateTimeFormatter.ofPattern("h:mma"));
     }
 }
