@@ -12,13 +12,35 @@
 
 ```shell
 
-curl http://localhost:8080/offers?time=11:00
+curl http://localhost:8080/deals?time=11:00 | jq -r .
+
+```
+```shell
+
+curl http://localhost:8080/deals?time=13:00 | jq -r .
+
+```
+```shell
+
+curl http://localhost:8080/deals?time=17:00  | jq -r .
 
 ```
 
 ```shell
 
-curl http://localhost:8080/peak
+curl http://localhost:8080/deals?time=21:00  | jq -r .
+
+```
+
+```shell
+
+curl http://localhost:8080/deals?time=23:30  | jq -r .
+
+```
+
+```shell
+
+curl http://localhost:8080/peak  | jq -r .
 
 ```
 

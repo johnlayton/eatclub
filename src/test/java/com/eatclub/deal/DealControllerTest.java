@@ -1,21 +1,39 @@
 package com.eatclub.deal;
 
+import com.eatclub.deal.DealService.ActiveDeal;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
+
+import java.time.LocalTime;
+import java.util.List;
+
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class DealControllerTest {
 
-    WebTestClient client =
-            MockMvcWebTestClient.bindToController(new DealController()).build();
+    @MockitoBean
+    private DealService dealService;
+
 
     @Test
     void shouldReturnOffersValidAtTime() {
+
+        LocalTime time = LocalTime.of(12, 0);
+
+        when(dealService.getActiveDeals(time))
+                .thenReturn(List.of(createActiveDeal(), createActiveDeal(), createActiveDeal(), createActiveDeal(), createActiveDeal()));
+
+        WebTestClient client =
+                MockMvcWebTestClient.bindToController(new DealController(dealService)).build();
+
         client.get()
-                .uri("/deals?time=12:30")
+                .uri("/deals?time=12:00")
                 .exchange()
                 .expectStatus().isOk()
                 .expectAll(
@@ -25,5 +43,22 @@ class DealControllerTest {
                                 .jsonPath("$.deals.length()").isEqualTo(5)
                 );
 
+        verify(dealService).getActiveDeals(time);
+    }
+
+    private static ActiveDeal createActiveDeal() {
+        return new ActiveDeal(
+                "restaurantObjectId",
+                "Restaurant Name",
+                "123 Main St",
+                "Suburb",
+                new Time(LocalTime.of(9, 0)),
+                new Time(LocalTime.of(21, 0)),
+                "dealObjectId",
+                20,
+                false,
+                true,
+                10
+        );
     }
 }

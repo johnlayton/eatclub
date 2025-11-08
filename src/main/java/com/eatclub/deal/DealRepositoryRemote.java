@@ -1,6 +1,5 @@
 package com.eatclub.deal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -9,7 +8,7 @@ import org.springframework.web.client.RestClient;
 @ConditionalOnProperty(value = "deal.repository", havingValue = "remote")
 public class DealRepositoryRemote implements DealRepository {
 
-    private RestClient restClient = RestClient.builder().baseUrl("https://eccdn.com.au").build();
+    private final RestClient restClient = RestClient.builder().baseUrl("https://eccdn.com.au").build();
 
     @Override
     public Restaurants getRestaurants() {

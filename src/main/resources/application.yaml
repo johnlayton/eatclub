@@ -3,4 +3,9 @@ spring:
     name: eatclub
 
 deal:
-  repository: local
+  repository: remote
+
+logging:
+  level:
+    com.eatclub: trace
+    org.springframework: debug
