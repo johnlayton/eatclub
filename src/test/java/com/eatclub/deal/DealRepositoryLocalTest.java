@@ -2,8 +2,6 @@ package com.eatclub.deal;
 
 import com.eatclub.deal.Restaurants.Deal;
 import com.eatclub.deal.Restaurants.Restaurant;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.TestPropertySource;
 
-import java.io.IOException;
 import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,10 +24,6 @@ class DealRepositoryLocalTest {
 
     @Autowired
     private DealRepository dealRepository;
-
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Value("classpath:challengedata.json")
     private Resource data;
