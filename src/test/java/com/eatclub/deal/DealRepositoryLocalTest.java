@@ -2,7 +2,6 @@ package com.eatclub.deal;
 
 import com.eatclub.deal.Restaurants.Deal;
 import com.eatclub.deal.Restaurants.Restaurant;
-import com.eatclub.offer.OfferConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -15,15 +14,12 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest(classes = {
-        DealRepositoryLocal.class,
-        OfferConfiguration.class
+        DealRepositoryLocal.class
 })
 @AutoConfigureJson
 @TestPropertySource(properties = {"deal.repository=local"})
@@ -40,16 +36,6 @@ class DealRepositoryLocalTest {
     private Resource data;
 
     @Test
-    void shouldParseLocalJsonFile() {
-        try {
-            objectMapper.readValue(data.getURL(), Restaurants.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Test
-    @Disabled
     void shouldLoadLocalRepository() {
         Restaurants restaurants = dealRepository.getRestaurants();
         assertEquals(6, restaurants.restaurants().size(),
@@ -69,7 +55,6 @@ class DealRepositoryLocalTest {
     }
 
     @Test
-    @Disabled
     void shouldHandleJsonAliasForDealDuration() {
         Restaurants restaurants = dealRepository.getRestaurants();
 

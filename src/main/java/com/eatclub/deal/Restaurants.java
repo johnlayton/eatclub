@@ -10,7 +10,8 @@ import java.util.List;
 public record Restaurants(List<Restaurant> restaurants) {
     public record Time(
             @JsonValue
-            @JsonFormat(pattern = "h:mma", with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_VALUES)
+            @JsonFormat(pattern = "h:mma",
+                    with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_VALUES)
             LocalTime value) implements Comparable<Time> {
         @Override
         public int compareTo(Time other) {
