@@ -22,6 +22,8 @@ curl http://localhost:8080/peak
 
 ```
 
+#### Download Challenge Data:
+
 ```shell
 
 wget https://eccdn.com.au/misc/challengedata.json --directory-prefix=src/test/resource
