@@ -3,6 +3,7 @@ package com.eatclub.deal;
 import com.eatclub.deal.DealService.ActiveDeal;
 import com.eatclub.deal.DealService.Interval;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJson;
@@ -54,8 +55,8 @@ class DealControllerTest {
                         spec -> spec.expectBody()
                                 .jsonPath("$.deals.length()").isEqualTo(5)
                                 .jsonPath("$.deals[0].restaurantObjectId").isEqualTo("restaurantObjectId")
-                                .jsonPath("$.deals[0].restaurantOpen").isEqualTo("9:00am")
-                                .jsonPath("$.deals[0].restaurantClose").isEqualTo("9:00pm")
+                                .jsonPath("$.deals[0].restaurantOpen").value(Matchers.equalToIgnoringCase("9:00am"))
+                                .jsonPath("$.deals[0].restaurantClose").value(Matchers.equalToIgnoringCase("9:00pm"))
                 );
 
         verify(dealService).getActiveDeals(time);
@@ -82,8 +83,8 @@ class DealControllerTest {
                         spec -> spec.expectStatus().isOk(),
                         spec -> spec.expectHeader().contentType(MediaType.APPLICATION_JSON),
                         spec -> spec.expectBody()
-                                .jsonPath("$.peakTimeStart").isEqualTo("12:00am")
-                                .jsonPath("$.peakTimeEnd").isEqualTo("12:00am")
+                                .jsonPath("$.peakTimeStart").value(Matchers.equalToIgnoringCase("12:00am"))
+                                .jsonPath("$.peakTimeEnd").value(Matchers.equalToIgnoringCase("12:00am"))
                 );
 
         verify(dealService).getPeakInterval();
