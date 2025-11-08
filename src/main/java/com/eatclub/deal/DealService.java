@@ -16,7 +16,7 @@ public class DealService {
         this.dealRepository = dealRepository;
     }
 
-    public List<Deal> getDeals(LocalTime time) {
+    public List<ActiveDeal> getDeals(LocalTime time) {
 
         Restaurants restaurants = dealRepository.getRestaurants();
 
@@ -24,10 +24,21 @@ public class DealService {
             return Collections.emptyList();
         }
 
-        return List.of(new Deal());
+        return List.of(new ActiveDeal(
+                "restaurantObjectId",
+                "Restaurant Name",
+                "123 Main St",
+                "Suburb",
+                new Time(LocalTime.of(9, 0)),
+                new Time(LocalTime.of(21, 0)),
+                "dealObjectId",
+                20,
+                false,
+                true
+        ));
     }
 
-    public record Offer(
+    public record ActiveDeal (
             String restaurantObjectId,
             String restaurantName,
             String restaurantAddress1,
@@ -39,8 +50,5 @@ public class DealService {
             boolean dineIn,
             boolean lightning
     ) {
-    }
-
-    public record Deal() {
     }
 }

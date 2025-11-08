@@ -1,6 +1,6 @@
 package com.eatclub.deal;
 
-import com.eatclub.deal.DealService.Deal;
+import com.eatclub.deal.DealService.ActiveDeal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,9 +20,24 @@ public class DealController {
     @GetMapping("/deals")
     public Deals getOffers(@RequestParam("time") LocalTime time) {
         dealService.getDeals(time);
-        return new Deals(List.of(new Deal(), new Deal(), new Deal(), new Deal(), new Deal()));
+        return new Deals(List.of(createActiveDeal(), createActiveDeal(), createActiveDeal(), createActiveDeal(), createActiveDeal()));
     }
 
-    public record Deals(List<Deal> deals) {
+    private static ActiveDeal createActiveDeal() {
+        return new ActiveDeal(
+                "restaurantObjectId",
+                "Restaurant Name",
+                "123 Main St",
+                "Suburb",
+                new Time(LocalTime.of(9, 0)),
+                new Time(LocalTime.of(21, 0)),
+                "dealObjectId",
+                20,
+                false,
+                true
+        );
+    }
+
+    public record Deals(List<ActiveDeal> deals) {
     }
 }
