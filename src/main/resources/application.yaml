@@ -2,3 +2,5 @@ spring:
   application:
     name: eatclub
 
+deal:
+  repository: local

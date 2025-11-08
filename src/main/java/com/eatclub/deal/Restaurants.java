@@ -8,14 +8,14 @@ import java.time.LocalTime;
 import java.util.List;
 
 public record Restaurants(List<Restaurant> restaurants) {
-    record Time(@JsonValue @JsonFormat(pattern = "h:mma") LocalTime value) implements Comparable<Time> {
+    public record Time(@JsonValue @JsonFormat(pattern = "h:mma") LocalTime value) implements Comparable<Time> {
         @Override
         public int compareTo(Time other) {
             return value.compareTo(other.value());
         }
     }
 
-    record Deal(
+    public record Deal(
             String objectId,
             int discount,
             boolean dineIn,
@@ -26,7 +26,7 @@ public record Restaurants(List<Restaurant> restaurants) {
     ) {
     }
 
-    record Restaurant(
+    public record Restaurant(
             String objectId,
             String name,
             String address1,
