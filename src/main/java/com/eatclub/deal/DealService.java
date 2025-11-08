@@ -1,8 +1,8 @@
 package com.eatclub.deal;
 
 import com.eatclub.deal.DealMapper.RestaurantDeal;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.eatclub.deal.DealRepository.Deal;
+import com.eatclub.deal.DealRepository.Restaurant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,13 +14,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Service
 public class DealService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DealService.class);
 
     private final DealRepository dealRepository;
     private final DealMapper dealMapper;
@@ -33,14 +32,11 @@ public class DealService {
     }
 
     public List<ActiveDeal> getActiveDeals(LocalTime time) {
-        final Time timeWrapper = new Time(time);
         return dealRepository.getRestaurants().restaurants()
                 .stream()
                 .flatMap(restaurant -> restaurant.deals().stream()
-                        .filter(deal -> deal.lightning()
-                                ? (!timeWrapper.value().isAfter(deal.close().value()) && !timeWrapper.value().isBefore(deal.open().value()))
-                                : (!timeWrapper.value().isAfter(restaurant.close().value()) && !timeWrapper.value().isBefore(restaurant.open().value())))
-                        .map(deal -> dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal)))
+                        .filter(isDealApplicable(restaurant, new Time(time)))
+                        .map(mapDealToActiveDeal(restaurant))
                 )
                 .toList();
     }
@@ -49,14 +45,12 @@ public class DealService {
         List<Counter> counters = dealRepository.getRestaurants().restaurants()
                 .stream()
                 .flatMap(restaurant -> restaurant.deals().stream()
-                        .map(deal -> deal.lightning()
-                                ? new Interval(deal.open(), deal.close(), deal.qtyLeft())
-                                : new Interval(restaurant.open(), restaurant.close(), deal.qtyLeft()))
+                        .map(mapToInterval(restaurant))
+                        .flatMap(interval -> Stream.of(
+                                new Counter(interval.start, interval.count),
+                                new Counter(interval.end, -interval.count)
+                        ))
                 )
-                .flatMap(interval -> Stream.of(
-                        new Counter(interval.start, interval.count),
-                        new Counter(interval.end, -interval.count)
-                ))
                 .sorted(Comparator
                         .comparing(Counter::time)
                         .thenComparing(Counter::val))
@@ -64,11 +58,24 @@ public class DealService {
         if (counters.isEmpty()) {
             return Optional.empty();
         } else {
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("Counters; \n{}", counters.stream().map(Counter::toString).collect(Collectors.joining("\n")));
-            }
             return Optional.of(find(counters));
         }
+    }
+
+    private Function<Deal, ActiveDeal> mapDealToActiveDeal(Restaurant restaurant) {
+        return deal -> dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal));
+    }
+
+    private Predicate<Deal> isDealApplicable(Restaurant restaurant, Time time) {
+        return deal -> deal.lightning()
+                ? (!time.value().isAfter(deal.close().value()) && !time.value().isBefore(deal.open().value()))
+                : (!time.value().isAfter(restaurant.close().value()) && !time.value().isBefore(restaurant.open().value()));
+    }
+
+    private Function<Deal, Interval> mapToInterval(Restaurant restaurant) {
+        return deal -> deal.lightning()
+                ? new Interval(deal.open(), deal.close(), deal.qtyLeft())
+                : new Interval(restaurant.open(), restaurant.close(), deal.qtyLeft());
     }
 
     private Interval find(List<Counter> counters) {
@@ -91,11 +98,6 @@ public class DealService {
             }
             maximumOverlaps = Math.max(maximumOverlaps, currentOverlaps);
         }
-
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("Intervals; \n{}", intervals.stream().map(Interval::toString).collect(Collectors.joining("\n")));
-        }
-
         return findMaxAndMerge(maximumOverlaps, intervals);
     }
 

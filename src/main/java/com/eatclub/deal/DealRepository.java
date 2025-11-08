@@ -11,17 +11,6 @@ public interface DealRepository {
     record Restaurants(List<Restaurant> restaurants) {
     }
 
-    record Deal(
-            String objectId,
-            int discount,
-            boolean dineIn,
-            boolean lightning,
-            @JsonAlias("start") Time open,
-            @JsonAlias("end") Time close,
-            int qtyLeft
-    ) {
-    }
-
     record Restaurant(
             String objectId,
             String name,
@@ -31,6 +20,17 @@ public interface DealRepository {
             List<Deal> deals,
             Time open,
             Time close
+    ) {
+    }
+
+    record Deal(
+            String objectId,
+            int discount,
+            boolean dineIn,
+            boolean lightning,
+            @JsonAlias("start") Time open,
+            @JsonAlias("end") Time close,
+            int qtyLeft
     ) {
     }
 }

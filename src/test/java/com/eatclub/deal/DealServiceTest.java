@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalTime;
@@ -27,7 +26,6 @@ import static org.mockito.Mockito.when;
         DealService.class,
         DealMapperImpl.class
 })
-@TestPropertySource(properties = {"logging.level.com.eatclub.deal.DealService=trace"})
 class DealServiceTest {
 
     @Autowired
