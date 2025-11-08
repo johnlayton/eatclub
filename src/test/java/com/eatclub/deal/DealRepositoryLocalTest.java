@@ -14,6 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,6 +37,14 @@ class DealRepositoryLocalTest {
     @Value("classpath:challengedata.json")
     private Resource data;
 
+    @Test
+    void parsingShouldBeSetUp() {
+        String timeString = "3:00pm";
+        // Correct pattern for 12-hour format with lowercase am/pm
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mma");
+        LocalTime time = LocalTime.parse(timeString, formatter);
+        System.out.println(time); // Output: 15:00
+    }
 
     @Test
     void shouldParseLocalJsonFile() {
