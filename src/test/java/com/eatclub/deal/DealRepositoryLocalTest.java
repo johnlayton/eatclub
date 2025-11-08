@@ -1,7 +1,8 @@
 package com.eatclub.deal;
 
-import com.eatclub.deal.Restaurants.Deal;
-import com.eatclub.deal.Restaurants.Restaurant;
+import com.eatclub.deal.DealRepository.Deal;
+import com.eatclub.deal.DealRepository.Restaurant;
+import com.eatclub.deal.DealRepository.Restaurants;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
