@@ -26,12 +26,12 @@ curl http://localhost:8080/peak
 
 ```shell
 
-wget https://eccdn.com.au/misc/challengedata.json --directory-prefix=src/test/resource
+wget https://eccdn.com.au/misc/challengedata.json --directory-prefix=src/test/resources
 
 ```
 
 ```shell
 
-wget https://eccdn.com.au/misc/challengedata.json --directory-prefix=src/main/resource
+wget https://eccdn.com.au/misc/challengedata.json --directory-prefix=src/main/resources
 
 ```
