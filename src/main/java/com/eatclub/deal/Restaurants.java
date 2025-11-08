@@ -3,18 +3,14 @@ package com.eatclub.deal;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Locale;
 
 public record Restaurants(List<Restaurant> restaurants) {
     public record Time(
             @JsonValue
-            @JsonFormat(pattern = "h:mma")
-//            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "h:mma", locale = "en_AU.UTF-8", timezone = "UTC")
-//            @JsonDeserialize(using = LocalTimeDeserializer.class)
+            @JsonFormat(pattern = "h:mma", with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_VALUES)
             LocalTime value) implements Comparable<Time> {
         @Override
         public int compareTo(Time other) {

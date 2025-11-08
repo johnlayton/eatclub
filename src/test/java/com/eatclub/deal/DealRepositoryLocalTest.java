@@ -16,6 +16,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -39,15 +40,6 @@ class DealRepositoryLocalTest {
     private Resource data;
 
     @Test
-    void parsingShouldBeSetUp() {
-        String timeString = "3:00pm";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mma");
-        LocalTime time = LocalTime.parse(timeString, formatter);
-        System.out.println(time);
-    }
-
-    @Test
-    @Disabled
     void shouldParseLocalJsonFile() {
         try {
             objectMapper.readValue(data.getURL(), Restaurants.class);
