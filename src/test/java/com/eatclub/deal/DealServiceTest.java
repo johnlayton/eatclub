@@ -49,47 +49,68 @@ class DealServiceTest {
     void shouldReturnSingleDetailsWhenSingleRestaurantHasActiveLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
-                        createRestaurant()
+                        createRestaurant(createDeal(true))
                 )));
 
         List<ActiveDeal> deals = dealService.getActiveDeals(LocalTime.of(13, 0));
 
         verify(dealRepository).getRestaurants();
 
-        assertFalse(deals.isEmpty(), "Deals list should not be empty when repository has active lightning deals");
+        assertFalse(deals.isEmpty(), "Deals list should not be empty when the repository has active lightning deals");
         assertEquals(1, deals.size(), "Deals list should contain one deal");
-        assertEquals("restaurantObjectId", deals.getFirst().restaurantObjectId());
+        assertEquals("restaurantObjectId", deals.getFirst().restaurantObjectId(), "Restaurant Object ID should match");
+        assertEquals(new Time(LocalTime.of(10, 0)), deals.getFirst().restaurantOpen(), "Restaurant open time should match deal open time");
+        assertEquals(new Time(LocalTime.of(14, 0)), deals.getFirst().restaurantClose(), "Restaurant close time should match deal close time");
+
     }
 
     @Test
-    void shouldReturnEmpyDetailsWhenSingleRestaurantHasNoActiveLightningDealInRepository() {
+    void shouldReturnEmptyDetailsWhenSingleRestaurantHasNoActiveLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
-                        createRestaurant()
+                        createRestaurant(createDeal(true))
                 )));
 
         List<ActiveDeal> deals = dealService.getActiveDeals(LocalTime.of(9, 0));
 
         verify(dealRepository).getRestaurants();
 
-        assertTrue(deals.isEmpty(), "Deals list should be empty when repository has no active lightning deals");
+        assertTrue(deals.isEmpty(), "Deals list should be empty when the  repository has no active lightning deals");
     }
 
-    private static Restaurant createRestaurant() {
+    @Test
+    void shouldReturnSingleDetailsWhenSingleRestaurantHasActiveNoneLightningDealInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(createDeal(false))
+                )));
+
+        List<ActiveDeal> deals = dealService.getActiveDeals(LocalTime.of(9, 0));
+
+        verify(dealRepository).getRestaurants();
+
+        assertFalse(deals.isEmpty(), "Deals list should not be empty when the repository has active non-lightning deals");
+        assertEquals(1, deals.size(), "Deals list should contain one deal");
+        assertEquals("restaurantObjectId", deals.getFirst().restaurantObjectId());
+        assertEquals(new Time(LocalTime.of(9, 0)), deals.getFirst().restaurantOpen(), "Restaurant open time should match restaurant open time");
+        assertEquals(new Time(LocalTime.of(21, 0)), deals.getFirst().restaurantClose(), "Restaurant close time should match restaurant close time");
+    }
+
+    private static Restaurant createRestaurant(Deal deal) {
         return new Restaurant(
                 "restaurantObjectId",
                 "Restaurant Name",
                 "123 Main St",
                 "Suburb",
                 Collections.emptyList(),
-                List.of(createDeal()),
+                List.of(deal),
                 new Time(LocalTime.of(9, 0)),
                 new Time(LocalTime.of(21, 0))
         );
     }
 
-    private static Deal createDeal() {
-        return new Deal("dealObjectId", 20, false, true,
+    private static Deal createDeal(boolean lightning) {
+        return new Deal("dealObjectId", 20, false, lightning,
                 new Time(LocalTime.of(10, 0)),
                 new Time(LocalTime.of(14, 0)),
                 10);
