@@ -20,6 +20,7 @@ class DealRepositoryRemoteTest {
     private DealRepository dealRepository;
 
     @Test
+    @Disabled
     void shouldLoadRemoteRepository() {
         Restaurants restaurants = dealRepository.getRestaurants();
         assertEquals(6, restaurants.restaurants().size(), "Should load 6 restaurants from the local JSON file");

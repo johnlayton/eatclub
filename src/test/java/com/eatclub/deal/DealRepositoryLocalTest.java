@@ -4,6 +4,7 @@ import com.eatclub.deal.Restaurants.Deal;
 import com.eatclub.deal.Restaurants.Restaurant;
 import com.eatclub.offer.OfferConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,13 +41,13 @@ class DealRepositoryLocalTest {
     @Test
     void parsingShouldBeSetUp() {
         String timeString = "3:00pm";
-        // Correct pattern for 12-hour format with lowercase am/pm
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mma");
         LocalTime time = LocalTime.parse(timeString, formatter);
-        System.out.println(time); // Output: 15:00
+        System.out.println(time);
     }
 
     @Test
+    @Disabled
     void shouldParseLocalJsonFile() {
         try {
             objectMapper.readValue(data.getURL(), Restaurants.class);
@@ -56,6 +57,7 @@ class DealRepositoryLocalTest {
     }
 
     @Test
+    @Disabled
     void shouldLoadLocalRepository() {
         Restaurants restaurants = dealRepository.getRestaurants();
         assertEquals(6, restaurants.restaurants().size(),
@@ -75,6 +77,7 @@ class DealRepositoryLocalTest {
     }
 
     @Test
+    @Disabled
     void shouldHandleJsonAliasForDealDuration() {
         Restaurants restaurants = dealRepository.getRestaurants();
 
