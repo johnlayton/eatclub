@@ -2,6 +2,7 @@ package com.eatclub.deal;
 
 import com.eatclub.deal.Restaurants.Deal;
 import com.eatclub.deal.Restaurants.Restaurant;
+import com.eatclub.offer.OfferConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,10 @@ import java.time.LocalTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@SpringBootTest(classes = DealRepositoryLocal.class)
+@SpringBootTest(classes = {
+        DealRepositoryLocal.class,
+        OfferConfiguration.class
+})
 @AutoConfigureJson
 @TestPropertySource(properties = {"deal.repository=local"})
 class DealRepositoryLocalTest {
