@@ -1,4 +1,4 @@
-package com.eatclub.offer;
+package com.eatclub.deal;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -7,10 +7,10 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
 
 @SpringBootTest
-class OfferControllerTest {
+class DealControllerTest {
 
     WebTestClient client =
-            MockMvcWebTestClient.bindToController(new OfferController()).build();
+            MockMvcWebTestClient.bindToController(new DealController()).build();
 
     @Test
     void shouldReturnOffersValidAtTime() {

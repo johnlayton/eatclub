@@ -2,6 +2,9 @@ package com.eatclub.deal;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import com.eatclub.deal.DealRepository.Deal;
+import com.eatclub.deal.DealRepository.Restaurant;
+import com.eatclub.deal.DealRepository.Restaurants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
@@ -27,11 +30,11 @@ class DealRepositoryRemoteTest {
         assertEquals(6, restaurants.restaurants().size(),
                 "Should load 6 restaurants from the local JSON file");
 
-        Restaurants.Restaurant restaurant = restaurants.restaurants().getFirst();
+        Restaurant restaurant = restaurants.restaurants().getFirst();
         assertEquals("Masala Kitchen", restaurant.name(),
                 "The first restaurant should be Masala Kitchen");
 
-        Restaurants.Deal deal = restaurant.deals().getFirst();
+        Deal deal = restaurant.deals().getFirst();
         assertEquals(50, deal.discount(),
                 "The first deal of the first restaurant should have a 50 discount");
         assertFalse(deal.dineIn(),
