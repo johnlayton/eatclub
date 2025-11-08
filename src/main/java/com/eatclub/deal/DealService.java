@@ -1,5 +1,6 @@
 package com.eatclub.deal;
 
+import com.eatclub.deal.DealMapper.RestaurantDeal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +25,10 @@ public class DealService {
         return dealRepository.getRestaurants().restaurants()
                 .stream()
                 .flatMap(restaurant -> restaurant.deals().stream()
-                        .filter(deal1 -> deal1.lightning()
-                                ? (!timeWrapper.value().isAfter(deal1.close().value()) && !timeWrapper.value().isBefore(deal1.open().value()))
+                        .filter(deal -> deal.lightning()
+                                ? (!timeWrapper.value().isAfter(deal.close().value()) && !timeWrapper.value().isBefore(deal.open().value()))
                                 : (!timeWrapper.value().isAfter(restaurant.close().value()) && !timeWrapper.value().isBefore(restaurant.open().value())))
-                        .map(deal -> dealMapper.toActiveDeal(restaurant, deal))
+                        .map(deal -> dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal)))
                 )
                 .toList();
     }
@@ -42,7 +43,8 @@ public class DealService {
             String dealObjectId,
             int discount,
             boolean dineIn,
-            boolean lightning
+            boolean lightning,
+            int qtyLeft
     ) {
     }
 }

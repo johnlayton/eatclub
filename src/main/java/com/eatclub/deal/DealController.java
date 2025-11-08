@@ -21,6 +21,7 @@ public class DealController {
     public Deals getOffers(@RequestParam("time") LocalTime time) {
         return new Deals(dealService.getActiveDeals(time));
     }
+    
     public record Deals(List<ActiveDeal> deals) {
     }
 }
