@@ -130,9 +130,9 @@ class DealServiceTest {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(
-                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0))),
-                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0))),
-                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)))
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10)
                         )
                 )));
 
@@ -146,19 +146,67 @@ class DealServiceTest {
     }
 
     @Test
+    void shouldReturnIntervalWhenSingleRestaurantHasMultipleActiveUnbalancedLightningDealInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(16, 0)), 100)
+                        )
+                )));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(interval.isPresent(), "Interval should be present when the repository has restaurants with unbalanced lightning deals");
+        assertEquals(new Time(LocalTime.of(15, 0)), interval.get().start(), "Interval start time should be 3:00 PM");
+        assertEquals(new Time(LocalTime.of(16, 0)), interval.get().end(), "Interval end time should be 4:00 PM");
+    }
+
+    @Test
+    void shouldReturnIntervalWhenMultipleRestaurantHasMultipleActiveUnbalancedLightningDealInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(16, 0)), new Time(LocalTime.of(18, 0)), 80)
+                        ),
+                        createRestaurant(
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(16, 0)), 50)
+                        )
+                )));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(interval.isPresent(), "Interval should be present when the repository has restaurants with unbalanced lightning deals");
+        assertEquals(new Time(LocalTime.of(16, 0)), interval.get().start(), "Interval start time should be 6:00 PM");
+        assertEquals(new Time(LocalTime.of(18, 0)), interval.get().end(), "Interval end time should be 8:00 PM");
+    }
+
+    @Test
     void shouldReturnIntervalWhenSingleRestaurantHasMultipleActiveIsolatedLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(
-                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0))),
-                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0))),
-                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0))),
-                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0))),
-                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0))),
-                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0))),
-                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0))),
-                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(16, 0))),
-                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(17, 0)))
+                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(16, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(17, 0)), 10)
                         )
                 )));
 
@@ -185,10 +233,10 @@ class DealServiceTest {
     }
 
     private static Deal createDeal(boolean lightning) {
-        return createDeal(lightning, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(14, 0)));
+        return createDeal(lightning, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(14, 0)), 10);
     }
 
-    private static Deal createDeal(boolean lightning, Time open, Time close) {
-        return new Deal("dealObjectId", 20, false, lightning, open, close, 10);
+    private static Deal createDeal(boolean lightning, Time open, Time close, int qtyLeft) {
+        return new Deal("dealObjectId", 20, false, lightning, open, close, qtyLeft);
     }
 }
