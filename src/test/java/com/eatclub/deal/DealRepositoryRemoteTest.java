@@ -22,7 +22,7 @@ class DealRepositoryRemoteTest {
     @Test
     void shouldLoadRemoteRepository() {
         Restaurants restaurants = dealRepository.getRestaurants();
-        assertEquals(4, restaurants.restaurants().size(), "Should load 6 restaurants from the local JSON file");
+        assertEquals(6, restaurants.restaurants().size(), "Should load 6 restaurants from the local JSON file");
     }
 
 }
