@@ -21,10 +21,10 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw --batch-mode clean verify
+        run: ./mvnw --errors clean verify
 
       - name: Test with Maven
-        run: ./mvnw --batch-mode test
+        run: ./mvnw --errors test
 
       - name: Upload test results
         if: always()
