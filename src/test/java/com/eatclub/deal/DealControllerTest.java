@@ -1,5 +1,6 @@
 package com.eatclub.deal;
 
+import com.eatclub.deal.DealService.ActiveDeal;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -25,7 +26,7 @@ class DealControllerTest {
 
         LocalTime time = LocalTime.of(12, 0);
 
-        when(dealService.getDeals(time))
+        when(dealService.getActiveDeals(time))
                 .thenReturn(List.of(createActiveDeal(), createActiveDeal(), createActiveDeal(), createActiveDeal(), createActiveDeal()));
 
         WebTestClient client =
@@ -42,12 +43,11 @@ class DealControllerTest {
                                 .jsonPath("$.deals.length()").isEqualTo(5)
                 );
 
-        verify(dealService).getDeals(time);
-
+        verify(dealService).getActiveDeals(time);
     }
 
-    private static DealService.ActiveDeal createActiveDeal() {
-        return new DealService.ActiveDeal(
+    private static ActiveDeal createActiveDeal() {
+        return new ActiveDeal(
                 "restaurantObjectId",
                 "Restaurant Name",
                 "123 Main St",

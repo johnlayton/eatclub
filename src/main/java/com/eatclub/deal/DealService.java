@@ -1,44 +1,38 @@
 package com.eatclub.deal;
 
-import com.eatclub.deal.DealRepository.Restaurants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
-import java.util.Collections;
 import java.util.List;
 
 @Service
 public class DealService {
 
     private final DealRepository dealRepository;
+    private final DealMapper dealMapper;
 
-    public DealService(DealRepository dealRepository) {
+    @Autowired
+    public DealService(DealRepository dealRepository,
+                       DealMapper dealMapper) {
         this.dealRepository = dealRepository;
+        this.dealMapper = dealMapper;
     }
 
-    public List<ActiveDeal> getDeals(LocalTime time) {
-
-        Restaurants restaurants = dealRepository.getRestaurants();
-
-        if (restaurants.restaurants().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return List.of(new ActiveDeal(
-                "restaurantObjectId",
-                "Restaurant Name",
-                "123 Main St",
-                "Suburb",
-                new Time(LocalTime.of(9, 0)),
-                new Time(LocalTime.of(21, 0)),
-                "dealObjectId",
-                20,
-                false,
-                true
-        ));
+    public List<ActiveDeal> getActiveDeals(LocalTime time) {
+        final Time timeWrapper = new Time(time);
+        return dealRepository.getRestaurants().restaurants()
+                .stream()
+                .flatMap(restaurant -> restaurant.deals().stream()
+                        .filter(deal1 -> deal1.lightning()
+                                ? (!timeWrapper.value().isAfter(deal1.close().value()) && !timeWrapper.value().isBefore(deal1.open().value()))
+                                : (!timeWrapper.value().isAfter(restaurant.close().value()) && !timeWrapper.value().isBefore(restaurant.open().value())))
+                        .map(deal -> dealMapper.toActiveDeal(restaurant, deal))
+                )
+                .toList();
     }
 
-    public record ActiveDeal (
+    public record ActiveDeal(
             String restaurantObjectId,
             String restaurantName,
             String restaurantAddress1,

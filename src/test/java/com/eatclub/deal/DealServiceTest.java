@@ -5,10 +5,10 @@ import com.eatclub.deal.DealRepository.Restaurant;
 import com.eatclub.deal.DealRepository.Restaurants;
 import com.eatclub.deal.DealService.ActiveDeal;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalTime;
 import java.util.Collections;
@@ -20,13 +20,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = {
+        DealService.class,
+        DealMapperImpl.class
+})
 class DealServiceTest {
 
+    @Autowired
     @InjectMocks
     private DealService dealService;
 
-    @Mock
+    @MockitoBean
     private DealRepository dealRepository;
 
     @Test
@@ -34,7 +38,7 @@ class DealServiceTest {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(Collections.emptyList()));
 
-        List<ActiveDeal> deals = dealService.getDeals(LocalTime.MIDNIGHT);
+        List<ActiveDeal> deals = dealService.getActiveDeals(LocalTime.MIDNIGHT);
 
         verify(dealRepository).getRestaurants();
 
@@ -45,29 +49,10 @@ class DealServiceTest {
     void shouldReturnSingleDetailsWhenSingleRestaurantHasActiveLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
-                        new Restaurant(
-                                "restaurantObjectId",
-                                "Restaurant Name",
-                                "123 Main St",
-                                "Suburb",
-                                Collections.emptyList(),
-                                List.of(
-                                        new Deal(
-                                                "dealObjectId",
-                                                20,
-                                                false,
-                                                true,
-                                                new Time(LocalTime.of(10, 0)),
-                                                new Time(LocalTime.of(14, 0)),
-                                                5
-                                        )
-                                ),
-                                new Time(LocalTime.of(9, 0)),
-                                new Time(LocalTime.of(21, 0))
-                        )
+                        createRestaurant()
                 )));
 
-        List<ActiveDeal> deals = dealService.getDeals(LocalTime.of(13, 0));
+        List<ActiveDeal> deals = dealService.getActiveDeals(LocalTime.of(13, 0));
 
         verify(dealRepository).getRestaurants();
 
@@ -76,9 +61,36 @@ class DealServiceTest {
         assertEquals("restaurantObjectId", deals.getFirst().restaurantObjectId());
     }
 
+    @Test
+    void shouldReturnEmpyDetailsWhenSingleRestaurantHasNoActiveLightningDealInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant()
+                )));
+
+        List<ActiveDeal> deals = dealService.getActiveDeals(LocalTime.of(9, 0));
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(deals.isEmpty(), "Deals list should be empty when repository has no active lightning deals");
+    }
+
+    private static Restaurant createRestaurant() {
+        return new Restaurant(
+                "restaurantObjectId",
+                "Restaurant Name",
+                "123 Main St",
+                "Suburb",
+                Collections.emptyList(),
+                List.of(createDeal()),
+                new Time(LocalTime.of(9, 0)),
+                new Time(LocalTime.of(21, 0))
+        );
+    }
+
     private static Deal createDeal() {
-        return new Deal("objectId", 10, false, true,
-                new Time(LocalTime.of(11, 0)),
+        return new Deal("dealObjectId", 20, false, true,
+                new Time(LocalTime.of(10, 0)),
                 new Time(LocalTime.of(14, 0)),
                 10);
     }
