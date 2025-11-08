@@ -20,9 +20,15 @@ jobs:
           distribution: 'corretto'
 
       - name: Build with Maven
+        env:
+          LANG: en_AU.UTF-8
+          LC_ALL: en_AU.UTF-8
         run: ./mvnw --batch-mode --errors clean verify
 
       - name: Test with Maven
+        env:
+          LANG: en_AU.UTF-8
+          LC_ALL: en_AU.UTF-8
         run: ./mvnw --batch-mode --errors test
 
       - name: Upload test results
