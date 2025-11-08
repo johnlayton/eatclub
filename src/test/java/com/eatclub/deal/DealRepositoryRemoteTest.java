@@ -1,10 +1,9 @@
 package com.eatclub.deal;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import com.eatclub.deal.DealRepository.Deal;
 import com.eatclub.deal.DealRepository.Restaurant;
 import com.eatclub.deal.DealRepository.Restaurants;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
@@ -24,7 +23,6 @@ class DealRepositoryRemoteTest {
     private DealRepository dealRepository;
 
     @Test
-    @Disabled
     void shouldLoadRemoteRepository() {
         Restaurants restaurants = dealRepository.getRestaurants();
         assertEquals(6, restaurants.restaurants().size(),

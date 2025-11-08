@@ -9,14 +9,14 @@ import java.util.List;
 
 @RestController
 public class DealController {
+    @GetMapping("/deals")
+    public Deals getOffers(@RequestParam LocalTime time) {
+        return new Deals(List.of(new Deal(), new Deal(), new Deal(), new Deal(), new Deal()));
+    }
+
     public record Deal() {
     }
 
     public record Deals(List<Deal> deals) {
-    }
-
-    @GetMapping("/deals")
-    public Deals getOffers(@RequestParam LocalTime time) {
-        return new Deals(List.of(new Deal(), new Deal(), new Deal(), new Deal(), new Deal()));
     }
 }

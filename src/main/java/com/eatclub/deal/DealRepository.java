@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface DealRepository {
 
+    Restaurants getRestaurants();
+
     record Restaurants(List<Restaurant> restaurants) {
     }
 
@@ -45,6 +47,4 @@ public interface DealRepository {
             Time close
     ) {
     }
-
-    Restaurants getRestaurants();
 }
