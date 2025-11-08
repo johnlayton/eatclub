@@ -4,8 +4,3 @@ spring:
 
 deal:
   repository: remote
-
-logging:
-  level:
-    com.eatclub: trace
-    org.springframework: debug

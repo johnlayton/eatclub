@@ -4,6 +4,7 @@ import com.eatclub.deal.DealRepository.Deal;
 import com.eatclub.deal.DealRepository.Restaurant;
 import com.eatclub.deal.DealRepository.Restaurants;
 import com.eatclub.deal.DealService.ActiveDeal;
+import com.eatclub.deal.DealService.Interval;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -61,7 +63,6 @@ class DealServiceTest {
         assertEquals("restaurantObjectId", deals.getFirst().restaurantObjectId(), "Restaurant Object ID should match");
         assertEquals(new Time(LocalTime.of(10, 0)), deals.getFirst().restaurantOpen(), "Restaurant open time should match deal open time");
         assertEquals(new Time(LocalTime.of(14, 0)), deals.getFirst().restaurantClose(), "Restaurant close time should match deal close time");
-
     }
 
     @Test
@@ -96,7 +97,129 @@ class DealServiceTest {
         assertEquals(new Time(LocalTime.of(21, 0)), deals.getFirst().restaurantClose(), "Restaurant close time should match restaurant close time");
     }
 
-    private static Restaurant createRestaurant(Deal deal) {
+    @Test
+    void shouldReturnEmptyIntervalWhenWhenNoRestaurantsInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of()));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertFalse(interval.isPresent(), "Interval should be empty when repository has no restaurants");
+    }
+
+    @Test
+    void shouldReturnIntervalWhenSingleRestaurantHasActiveNoneLightningDealInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(createDeal(false))
+                )));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(interval.isPresent(), "Interval should be present when repository has restaurants with non-lightning deals");
+        assertEquals(new Time(LocalTime.of(9, 0)), interval.get().start(), "Interval start time should be 9:00 AM");
+        assertEquals(new Time(LocalTime.of(21, 0)), interval.get().end(), "Interval end time should be 9:00 PM");
+    }
+
+    @Test
+    void shouldReturnIntervalWhenSingleRestaurantHasMultipleActiveLightningDealInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10)
+                        )
+                )));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(interval.isPresent(), "Interval should be present when repository has restaurants with non-lightning deals");
+        assertEquals(new Time(LocalTime.of(10, 0)), interval.get().start(), "Interval start time should be 9:00 AM");
+        assertEquals(new Time(LocalTime.of(12, 0)), interval.get().end(), "Interval end time should be 9:00 PM");
+    }
+
+    @Test
+    void shouldReturnIntervalWhenSingleRestaurantHasMultipleActiveUnbalancedLightningDealInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(16, 0)), 100)
+                        )
+                )));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(interval.isPresent(), "Interval should be present when the repository has restaurants with unbalanced lightning deals");
+        assertEquals(new Time(LocalTime.of(15, 0)), interval.get().start(), "Interval start time should be 3:00 PM");
+        assertEquals(new Time(LocalTime.of(16, 0)), interval.get().end(), "Interval end time should be 4:00 PM");
+    }
+
+    @Test
+    void shouldReturnIntervalWhenMultipleRestaurantHasMultipleActiveUnbalancedLightningDealInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(16, 0)), new Time(LocalTime.of(18, 0)), 80)
+                        ),
+                        createRestaurant(
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(16, 0)), 50)
+                        )
+                )));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(interval.isPresent(), "Interval should be present when the repository has restaurants with unbalanced lightning deals");
+        assertEquals(new Time(LocalTime.of(16, 0)), interval.get().start(), "Interval start time should be 6:00 PM");
+        assertEquals(new Time(LocalTime.of(18, 0)), interval.get().end(), "Interval end time should be 8:00 PM");
+    }
+
+    @Test
+    void shouldReturnIntervalWhenSingleRestaurantHasMultipleActiveIsolatedLightningDealInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(
+                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(16, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(17, 0)), 10)
+                        )
+                )));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(interval.isPresent(), "Interval should be present when repository has restaurants with non-lightning deals");
+        assertEquals(new Time(LocalTime.of(10, 0)), interval.get().start(), "Interval start time should be 9:00 AM");
+        assertEquals(new Time(LocalTime.of(12, 0)), interval.get().end(), "Interval end time should be 9:00 PM");
+    }
+
+    private static Restaurant createRestaurant(Deal... deal) {
         return new Restaurant(
                 "restaurantObjectId",
                 "Restaurant Name",
@@ -110,9 +233,10 @@ class DealServiceTest {
     }
 
     private static Deal createDeal(boolean lightning) {
-        return new Deal("dealObjectId", 20, false, lightning,
-                new Time(LocalTime.of(10, 0)),
-                new Time(LocalTime.of(14, 0)),
-                10);
+        return createDeal(lightning, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(14, 0)), 10);
+    }
+
+    private static Deal createDeal(boolean lightning, Time open, Time close, int qtyLeft) {
+        return new Deal("dealObjectId", 20, false, lightning, open, close, qtyLeft);
     }
 }
