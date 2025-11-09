@@ -65,9 +65,9 @@ wget https://eccdn.com.au/misc/challengedata.json --directory-prefix=src/main/re
 
 ```mermaid
   erDiagram
-    Restaurant ||--o{ Restaurant_Cuisine : a
-    Restaurant ||--o{ Deal :  has
-    Cuisine ||--o{ Restaurant_Cuisine : a
+    Cuisine ||--o{ Restaurant_Cuisine : "is associated with"
+    Restaurant ||--o{ Restaurant_Cuisine : "is categorised by"
+    Restaurant ||--o{ Deal :  "has many"
       
     Restaurant {
         string objectId PK
