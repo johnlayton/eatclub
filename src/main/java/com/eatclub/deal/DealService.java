@@ -1,6 +1,8 @@
 package com.eatclub.deal;
 
 import com.eatclub.deal.DealMapper.RestaurantDeal;
+import com.eatclub.deal.DealRepository.Deal;
+import com.eatclub.deal.DealRepository.Restaurant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +14,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 @Service
 public class DealService {
 
+    private static final Comparator<Interval> COUNTER_COMPARATOR = Comparator.comparingInt(Interval::count)
+            .thenComparing(Interval::duration)
+            .thenComparing(Interval::start)
+            .thenComparing(Interval::end)
+            .reversed();
     private final DealRepository dealRepository;
     private final DealMapper dealMapper;
 
@@ -34,9 +42,11 @@ public class DealService {
      * @return a list of active deals
      */
     public List<ActiveDeal> getActiveDeals(LocalTime time) {
+        BiFunction<Restaurant, Deal, ActiveDeal> toActiveDealStream = (restaurant, deal) ->
+                dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal));
+
         return Optional.ofNullable(dealRepository.getRestaurants())
-                .map(restaurants -> restaurants.createStream((restaurant, deal) ->
-                        dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal))))
+                .map(restaurants -> restaurants.createStream(toActiveDealStream))
                 .orElse(Stream.empty())
                 .filter(deal ->
                         !time.isAfter(deal.restaurantClose().value()) && !time.isBefore(deal.restaurantOpen().value())
@@ -60,9 +70,11 @@ public class DealService {
      * @return an Optional containing the peak interval, or empty if there are no deals
      */
     public Optional<Interval> getPeakInterval() {
+        BiFunction<Restaurant, Deal, ActiveDeal> toActiveDealStream = (restaurant, deal) ->
+                dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal));
+
         List<Counter> counters = Optional.ofNullable(dealRepository.getRestaurants())
-                .map(restaurants -> restaurants.createStream((restaurant, deal) ->
-                        dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal))))
+                .map(restaurants -> restaurants.createStream(toActiveDealStream))
                 .orElse(Stream.empty())
                 .flatMap(activeDeal -> Stream.of(
                         new Counter(activeDeal.restaurantOpen(), activeDeal.qtyLeft()),
@@ -84,12 +96,7 @@ public class DealService {
         int maximumOverlaps = 0;
         int currentOverlaps = 0;
 
-        SortedSet<Interval> intervals = new TreeSet<>(
-                Comparator.comparingInt(Interval::count)
-                        .thenComparing(Interval::duration)
-                        .thenComparing(Interval::start)
-                        .thenComparing(Interval::end)
-                        .reversed());
+        SortedSet<Interval> intervals = new TreeSet<>(COUNTER_COMPARATOR);
 
         for (int i = 0, j = 1; j < counters.size(); i++, j++) {
             Counter thisEvent = counters.get(i);
