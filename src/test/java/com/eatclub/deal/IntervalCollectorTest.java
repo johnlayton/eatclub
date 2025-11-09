@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class IntervalCollectorTest {
 
     @Test
-    void testSimplePeak() {
+    void shouldFindSimplePeak() {
 
         Comparator<Counter> earliestLargest = Comparator.comparing(Counter::time)
                 .thenComparing(Counter::val);
@@ -39,7 +39,7 @@ class IntervalCollectorTest {
 
 
     @Test
-    void testMultiPeakSameSizePicksLatest() {
+    void shouldFindMultiPeakSameSizePicksLatest() {
 
         Comparator<Counter> earliestLargest = Comparator.comparing(Counter::time)
                 .thenComparing(Counter::val);
@@ -62,7 +62,7 @@ class IntervalCollectorTest {
     }
 
     @Test
-    void testMultiPeakPicksLongest() {
+    void shouldFindMultiPeakPicksLongest() {
 
         Comparator<Counter> earliestLargest = Comparator.comparing(Counter::time)
                 .thenComparing(Counter::val);
@@ -85,7 +85,7 @@ class IntervalCollectorTest {
     }
 
     @Test
-    void testMultiPeakPicksLargest() {
+    void shouldFindMultiPeakPicksLargest() {
 
         Comparator<Counter> earliestLargest = Comparator.comparing(Counter::time)
                 .thenComparing(Counter::val);
@@ -108,7 +108,7 @@ class IntervalCollectorTest {
     }
 
     @Test
-    void testMultiPeakMergesAddPicksLongest() {
+    void shouldFindMultiPeakMergesAddPicksLongest() {
 
         Comparator<Counter> earliestLargest = Comparator.comparing(Counter::time)
                 .thenComparing(Counter::val);
@@ -129,6 +129,33 @@ class IntervalCollectorTest {
         assertTrue(max.isPresent(), "Max interval should be present");
         assertEquals(LocalTime.of(8, 0), max.get().start().value(), "Interval start time should be 8:00");
         assertEquals(LocalTime.of(10, 0), max.get().end().value(), "Interval end time should be 10:00");
+        assertEquals(8, max.get().count(), "Interval count should be 8");
+    }
+
+    @Test
+    void shouldFindMultiPeakMergesAddPicksLatest() {
+
+        Comparator<Counter> earliestLargest = Comparator.comparing(Counter::time)
+                .thenComparing(Counter::val);
+
+        List<Counter> counters = List.of(
+                new Counter(new Time(LocalTime.of(8, 0)), 8),
+                new Counter(new Time(LocalTime.of(9, 0)), -8),
+                new Counter(new Time(LocalTime.of(9, 0)), 8),
+                new Counter(new Time(LocalTime.of(10, 0)), -8),
+                new Counter(new Time(LocalTime.of(10, 0)), 5),
+                new Counter(new Time(LocalTime.of(11, 0)), -5),
+                new Counter(new Time(LocalTime.of(12, 0)), 8),
+                new Counter(new Time(LocalTime.of(13, 0)), -8),
+                new Counter(new Time(LocalTime.of(13, 0)), 8),
+                new Counter(new Time(LocalTime.of(14, 0)), -8)
+        );
+
+        Optional<Interval> max = counters.stream().sorted(earliestLargest).collect(new IntervalCollector());
+
+        assertTrue(max.isPresent(), "Max interval should be present");
+        assertEquals(LocalTime.of(12, 0), max.get().start().value(), "Interval start time should be 12:00");
+        assertEquals(LocalTime.of(14, 0), max.get().end().value(), "Interval end time should be 14:00");
         assertEquals(8, max.get().count(), "Interval count should be 8");
     }
 }

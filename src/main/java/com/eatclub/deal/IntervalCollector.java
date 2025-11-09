@@ -16,7 +16,7 @@ import java.util.stream.Collector;
 
 public class IntervalCollector implements Collector<Counter, SortedSet<Interval>, Optional<Interval>> {
 
-    private static final Comparator<Interval> INTERVAL_LARGEST_LONGEST_EARLIEST =
+    private static final Comparator<Interval> INTERVAL_LARGEST_LONGEST_LATEST =
             Comparator.comparingInt(Interval::count)
                     .thenComparing(Interval::duration)
                     .thenComparing(Interval::start)
@@ -29,7 +29,7 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
 
     @Override
     public Supplier<SortedSet<Interval>> supplier() {
-        return () -> new TreeSet<>(INTERVAL_LARGEST_LONGEST_EARLIEST);
+        return () -> new TreeSet<>(INTERVAL_LARGEST_LONGEST_LATEST);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
     }
 
     private Interval findMaxIntervalsAndMerge(SortedSet<Interval> intervals) {
-        final SortedSet<Interval> merged = new TreeSet<>(INTERVAL_LARGEST_LONGEST_EARLIEST);
+        final SortedSet<Interval> merged = new TreeSet<>(INTERVAL_LARGEST_LONGEST_LATEST);
         merged.add(intervals.removeFirst());
         intervals.stream()
                 .filter(count -> count.count() == maximumOverlaps)

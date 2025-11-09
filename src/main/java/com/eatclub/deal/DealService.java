@@ -17,8 +17,8 @@ import java.util.stream.Stream;
 @Service
 public class DealService {
 
-    private static final Comparator<Counter> COUNTER_EARLIEST_CLOSED = Comparator.comparing(Counter::time)
-            .thenComparing(Counter::val);
+    private static final Comparator<Counter> COUNTER_EARLIEST_CLOSED =
+            Comparator.comparing(Counter::time).thenComparing(Counter::val);
 
     private final DealRepository dealRepository;
     private final DealMapper dealMapper;
