@@ -30,22 +30,6 @@ class DealControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static ActiveDeal createActiveDeal() {
-        return new ActiveDeal(
-                "restaurantObjectId",
-                "Restaurant Name",
-                "123 Main St",
-                "Suburb",
-                new Time(LocalTime.of(9, 0)),
-                new Time(LocalTime.of(21, 0)),
-                "dealObjectId",
-                20,
-                false,
-                true,
-                10
-        );
-    }
-
     @Test
     void shouldReturnDealsValidAtTime() {
 
@@ -128,5 +112,21 @@ class DealControllerTest {
                 );
 
         verify(dealService).getPeakInterval();
+    }
+
+    private ActiveDeal createActiveDeal() {
+        return new ActiveDeal(
+                "restaurantObjectId",
+                "Restaurant Name",
+                "123 Main St",
+                "Suburb",
+                new Time(LocalTime.of(9, 0)),
+                new Time(LocalTime.of(21, 0)),
+                "dealObjectId",
+                20,
+                false,
+                true,
+                10
+        );
     }
 }

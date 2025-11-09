@@ -60,10 +60,6 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
             if (intervals.isEmpty()) {
                 return Optional.empty();
             } else {
-//                System.out.println("Max overlaps: " + maximumOverlaps);
-//                System.out.println(intervals.stream()
-//                        .map(interval -> String.format("%s - %s - %s - %s", interval.count(), interval.duration(), interval.start(), interval.end()))
-//                        .collect(Collectors.joining("\n")));
                 return Optional.of(findMaxIntervalsAndMerge(intervals));
             }
         };
@@ -75,45 +71,20 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
     }
 
     private Interval findMaxIntervalsAndMerge(SortedSet<Interval> intervals) {
-//        new SortedSet<Interval>(List.of(intervals.removeFirst()));
-//        System.out.println("Finding max intervals with overlaps: " + maximumOverlaps);
-//
-//        System.out.println("+++++++++++++++++++++++");
-//        System.out.println(intervals.stream()
-//                .map(interval -> String.format("%s - %s - %s - %s", interval.count(), interval.duration(), interval.start(), interval.end()))
-//                .collect(Collectors.joining("\n")));
-//        System.out.println("+++++++++++++++++++++++");
-
         final SortedSet<Interval> merged = new TreeSet<>(INTERVAL_LARGEST_LONGEST_EARLIEST);
         merged.add(intervals.removeFirst());
-
-//        System.out.println("+++++++++++++++++++++++");
-//        System.out.println(intervals.stream()
-//                .map(interval -> String.format("%s - %s - %s - %s", interval.count(), interval.duration(), interval.start(), interval.end()))
-//                .collect(Collectors.joining("\n")));
-//        System.out.println("+++++++++++++++++++++++");
-
         intervals.stream()
                 .filter(count -> count.count() == maximumOverlaps)
-                .forEach(interval -> {
-//                    System.out.println("Processing interval: " + interval);
-                    Interval lastMerged = merged.getLast();
-//                    System.out.println("Last merged interval: " + lastMerged);
-                    if (interval.end().value().equals(lastMerged.start().value()) ||
-                            interval.start().value().equals(lastMerged.end().value())) {
-                        merged.remove(lastMerged);
-                        merged.add(new Interval(interval.start(), lastMerged.end(), interval.count()));
+                .forEach(currentInterval -> {
+                    Interval lastMergedInterval = merged.getLast();
+                    if (currentInterval.end().value().equals(lastMergedInterval.start().value()) ||
+                            currentInterval.start().value().equals(lastMergedInterval.end().value())) {
+                        merged.remove(lastMergedInterval);
+                        merged.add(new Interval(currentInterval.start(), lastMergedInterval.end(), currentInterval.count()));
                     } else {
-                        merged.add(interval);
+                        merged.add(currentInterval);
                     }
                 });
-
-//        System.out.println("+++++++++++++++++++++++");
-//        System.out.println(merged.stream()
-//                .map(interval -> String.format("%s - %s - %s - %s", interval.count(), interval.duration(), interval.start(), interval.end()))
-//                .collect(Collectors.joining("\n")));
-//        System.out.println("+++++++++++++++++++++++");
-
         return merged.getFirst();
     }
 }
