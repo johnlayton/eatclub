@@ -23,10 +23,7 @@ public interface DealRepository {
             return Optional.ofNullable(restaurants)
                     .map(Collection::stream).stream()
                     .flatMap(restaurants ->
-                            restaurants.flatMap(restaurant ->
-                                    Optional.ofNullable(restaurant.deals()).stream()
-                                            .flatMap(deals -> deals.stream()
-                                                    .map(deal -> function.apply(restaurant, deal)))));
+                            restaurants.flatMap(restaurant -> restaurant.createStream(function)));
         }
     }
 
@@ -40,6 +37,18 @@ public interface DealRepository {
             Time open,
             Time close
     ) {
+        /* Create a stream of T by applying the given BiFunction to this Restaurant and each of its Deals.
+         *
+         * @param function A BiFunction that takes a Restaurant and a Deal and produces an instance of T.
+         * @param <T>      The type of the elements in the resulting stream.
+         * @return A Stream of T created by applying the function to this Restaurant and each Deal.
+         */
+        public <T> Stream<T> createStream(BiFunction<Restaurant, Deal, T> function) {
+            return Optional.ofNullable(deals)
+                    .map(Collection::stream).stream()
+                    .flatMap(deals ->
+                            deals.map(deal -> function.apply(Restaurant.this, deal)));
+        }
     }
 
     record Deal(
