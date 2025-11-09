@@ -112,3 +112,6 @@ The data is loaded from the provided JSON file into the database at application 
   and have time windows when they are valid,
   as well as quantity available.
   Deals will have a foreign key relationship to Restaurant.
+
+- Indexes would be created on frequently queried fields such as deal open/close times,
+  restaurant open/close times, and cuisine names to optimize query performance.
