@@ -20,11 +20,15 @@ import java.util.stream.Stream;
 @Service
 public class DealService {
 
-    private static final Comparator<Interval> COUNTER_COMPARATOR = Comparator.comparingInt(Interval::count)
+    private static final Comparator<Interval> INTERVAL_LARGEST_LONGEST_EARLIEST = Comparator.comparingInt(Interval::count)
             .thenComparing(Interval::duration)
             .thenComparing(Interval::start)
             .thenComparing(Interval::end)
             .reversed();
+    
+    private static final Comparator<Counter> COUNTER_EARLIEST_CLOSED = Comparator.comparing(Counter::time)
+            .thenComparing(Counter::val)
+    
     private final DealRepository dealRepository;
     private final DealMapper dealMapper;
 
@@ -61,9 +65,9 @@ public class DealService {
      *  - one for the opening time (adding the quantity left)<br/>
      *  - one for the closing time (subtracting the quantity left).<br/>
      * <br/><br/>
-     * The counters are sorted by time and qty.
+     * The counters are sorted by time and quantity.
      * <br/><br/>
-     * The sorted counters are re-processed to intervals with counts of overlapping deals.
+     * The sorted counters are re-processed into intervals with counts of overlapping deals.
      * <br/><br/>
      * Finally, the new intervals are filtered to find the one with the maximum overlaps and adjacent intervals are merged.
      *
@@ -80,9 +84,7 @@ public class DealService {
                         new Counter(activeDeal.restaurantOpen(), activeDeal.qtyLeft()),
                         new Counter(activeDeal.restaurantClose(), -activeDeal.qtyLeft())
                 ))
-                .sorted(Comparator
-                        .comparing(Counter::time)
-                        .thenComparing(Counter::val))
+                .sorted(COUNTER_EARLIEST_CLOSED)
                 .toList();
 
         if (counters.isEmpty()) {
@@ -93,10 +95,9 @@ public class DealService {
     }
 
     private Interval findPeakInterval(List<Counter> counters) {
+        final SortedSet<Interval> intervals = new TreeSet<>(INTERVAL_LARGEST_LONGEST_EARLIEST);
         int maximumOverlaps = 0;
         int currentOverlaps = 0;
-
-        SortedSet<Interval> intervals = new TreeSet<>(COUNTER_COMPARATOR);
 
         for (int i = 0, j = 1; j < counters.size(); i++, j++) {
             Counter thisEvent = counters.get(i);
