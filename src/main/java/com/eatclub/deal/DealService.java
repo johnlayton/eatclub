@@ -1,22 +1,17 @@
 package com.eatclub.deal;
 
 import com.eatclub.deal.DealMapper.RestaurantDeal;
-import com.eatclub.deal.DealRepository.Deal;
-import com.eatclub.deal.DealRepository.Restaurant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Service
@@ -34,59 +29,34 @@ public class DealService {
 
     public List<ActiveDeal> getActiveDeals(LocalTime time) {
         return Optional.ofNullable(dealRepository.getRestaurants())
-                .map(DealRepository.Restaurants::restaurants)
-                .map(restaurants -> restaurants
-                        .stream()
-                        .flatMap(restaurant -> Optional.ofNullable(restaurant.deals())
-                                .map(deals -> deals.stream()
-                                        .filter(isDealApplicable(restaurant, new Time(time)))
-                                        .map(mapDealToActiveDeal(restaurant))
-                                )
-                                .orElse(Stream.empty())
-                        )
-                        .toList()
+                .map(restaurants -> restaurants.forEachDeal((restaurant, deal) ->
+                        dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal))))
+                .orElse(Stream.empty())
+                .filter(deal ->
+                        !time.isAfter(deal.restaurantClose().value()) && !time.isBefore(deal.restaurantOpen().value())
                 )
-                .orElse(Collections.emptyList());
+                .toList();
     }
 
     public Optional<Interval> getPeakInterval() {
-        return Optional.ofNullable(dealRepository.getRestaurants())
-                .map(DealRepository.Restaurants::restaurants)
-                .map(restaurants -> restaurants
-                        .stream()
-                        .flatMap(restaurant -> Optional.ofNullable(restaurant.deals())
-                                .map(deals -> deals.stream()
-                                        .map(mapToInterval(restaurant))
-                                        .flatMap(interval -> Stream.of(
-                                                new Counter(interval.start, interval.count),
-                                                new Counter(interval.end, -interval.count)
-                                        ))
-                                )
-                                .orElse(Stream.empty())
-                        )
-                        .sorted(Comparator
-                                .comparing(Counter::time)
-                                .thenComparing(Counter::val))
-                        .toList()
-                )
-                .filter(counters -> !counters.isEmpty())
-                .map(this::findPeakInterval);
-    }
+        List<Counter> counters = Optional.ofNullable(dealRepository.getRestaurants())
+                .map(restaurants -> restaurants.forEachDeal((restaurant, deal) ->
+                        dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal))))
+                .orElse(Stream.empty())
+                .flatMap(activeDeal -> Stream.of(
+                        new Counter(activeDeal.restaurantOpen(), activeDeal.qtyLeft()),
+                        new Counter(activeDeal.restaurantClose(), -activeDeal.qtyLeft())
+                ))
+                .sorted(Comparator
+                        .comparing(Counter::time)
+                        .thenComparing(Counter::val))
+                .toList();
 
-    private Function<Deal, ActiveDeal> mapDealToActiveDeal(Restaurant restaurant) {
-        return deal -> dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal));
-    }
-
-    private Predicate<Deal> isDealApplicable(Restaurant restaurant, Time time) {
-        return deal -> deal.lightning()
-                ? (!time.value().isAfter(deal.close().value()) && !time.value().isBefore(deal.open().value()))
-                : (!time.value().isAfter(restaurant.close().value()) && !time.value().isBefore(restaurant.open().value()));
-    }
-
-    private Function<Deal, Interval> mapToInterval(Restaurant restaurant) {
-        return deal -> deal.lightning()
-                ? new Interval(deal.open(), deal.close(), deal.qtyLeft())
-                : new Interval(restaurant.open(), restaurant.close(), deal.qtyLeft());
+        if (counters.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(findPeakInterval(counters));
+        }
     }
 
     private Interval findPeakInterval(List<Counter> counters) {
@@ -114,6 +84,7 @@ public class DealService {
 
     private Interval findMaxIntervalsAndMerge(int maximumOverlaps, SortedSet<Interval> intervals) {
         final List<Interval> merged = new ArrayList<>(List.of(intervals.removeFirst()));
+
         intervals.stream()
                 .filter(count -> count.count() == maximumOverlaps)
                 .forEach(interval -> {
