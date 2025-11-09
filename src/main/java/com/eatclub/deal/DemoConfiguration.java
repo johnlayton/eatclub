@@ -1,5 +1,6 @@
 package com.eatclub.deal;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
@@ -18,8 +19,8 @@ public class DemoConfiguration {
         return builder -> {
             SimpleModule localTimeModule = new SimpleModule();
             localTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern("h:mma")));
-            builder.modules(new JavaTimeModule());
-            builder.modules(localTimeModule);
+            builder.modulesToInstall(new JavaTimeModule());
+            builder.modulesToInstall(localTimeModule);
         };
     }
 }

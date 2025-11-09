@@ -25,7 +25,8 @@ public class DealRepositoryLocal implements DealRepository {
     @Override
     public Restaurants getRestaurants() {
         try {
-            return objectMapper.readValue(data.getContentAsString(Charset.defaultCharset()), Restaurants.class);
+            String contentAsString = data.getContentAsString(Charset.defaultCharset());
+            return objectMapper.readValue(contentAsString, Restaurants.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
