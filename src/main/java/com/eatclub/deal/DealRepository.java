@@ -2,13 +2,32 @@ package com.eatclub.deal;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 public interface DealRepository {
 
     Restaurants getRestaurants();
 
     record Restaurants(List<Restaurant> restaurants) {
+        /* Create a stream of T by applying the given BiFunction to each combination of Restaurant and Deal.
+         *
+         * @param function A BiFunction that takes a Restaurant and a Deal and produces an instance of T.
+         * @param <T>      The type of the elements in the resulting stream.
+         * @return A Stream of T created by applying the function to each Restaurant-Deal pair.
+         */
+        public <T> Stream<T> createStream(BiFunction<Restaurant, Deal, T> function) {
+            return Optional.ofNullable(restaurants)
+                    .map(Collection::stream).stream()
+                    .flatMap(restaurants ->
+                            restaurants.flatMap(restaurant ->
+                                    Optional.ofNullable(restaurant.deals()).stream()
+                                            .flatMap(deals -> deals.stream()
+                                                    .map(deal -> function.apply(restaurant, deal)))));
+        }
     }
 
     record Restaurant(
