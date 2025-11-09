@@ -23,20 +23,20 @@ public interface DealMapper {
     ActiveDeal toActiveDeal(RestaurantDeal dealWrapper);
 
     @Named("openTime")
-    default Time mapOpenTime(RestaurantDeal deal) {
-        if (deal.deal().lightning()) {
-            return deal.deal().open();
+    default Time mapOpenTime(RestaurantDeal dealWrapper) {
+        if (dealWrapper.deal().lightning()) {
+            return dealWrapper.deal().open();
         } else {
-            return deal.restaurant().open();
+            return dealWrapper.restaurant().open();
         }
     }
 
     @Named("closeTime")
-    default Time mapCloseTime(RestaurantDeal deal) {
-        if (deal.deal().lightning()) {
-            return deal.deal().close();
+    default Time mapCloseTime(RestaurantDeal dealWrapper) {
+        if (dealWrapper.deal().lightning()) {
+            return dealWrapper.deal().close();
         } else {
-            return deal.restaurant().close();
+            return dealWrapper.restaurant().close();
         }
     }
 

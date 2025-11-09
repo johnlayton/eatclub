@@ -27,9 +27,15 @@ public class DealService {
         this.dealMapper = dealMapper;
     }
 
+    /**
+     * Get all active deals that apply for a given time.
+     *
+     * @param time the time to check for active deals
+     * @return a list of active deals
+     */
     public List<ActiveDeal> getActiveDeals(LocalTime time) {
         return Optional.ofNullable(dealRepository.getRestaurants())
-                .map(restaurants -> restaurants.forEachDeal((restaurant, deal) ->
+                .map(restaurants -> restaurants.createStream((restaurant, deal) ->
                         dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal))))
                 .orElse(Stream.empty())
                 .filter(deal ->
@@ -38,9 +44,24 @@ public class DealService {
                 .toList();
     }
 
+    /**
+     * Get the interval with the highest number of overlapping active deals.
+     * <br/><br/>
+     * Each active deal is converted to a pair of counters:<br/>
+     *  - one for the opening time (adding the quantity left)<br/>
+     *  - one for the closing time (subtracting the quantity left).<br/>
+     * <br/><br/>
+     * The counters are sorted by time and qty.
+     * <br/><br/>
+     * The sorted counters are re-processed to intervals with counts of overlapping deals.
+     * <br/><br/>
+     * Finally, the new intervals are filtered to find the one with the maximum overlaps and adjacent intervals are merged.
+     *
+     * @return an Optional containing the peak interval, or empty if there are no deals
+     */
     public Optional<Interval> getPeakInterval() {
         List<Counter> counters = Optional.ofNullable(dealRepository.getRestaurants())
-                .map(restaurants -> restaurants.forEachDeal((restaurant, deal) ->
+                .map(restaurants -> restaurants.createStream((restaurant, deal) ->
                         dealMapper.toActiveDeal(new RestaurantDeal(restaurant, deal))))
                 .orElse(Stream.empty())
                 .flatMap(activeDeal -> Stream.of(

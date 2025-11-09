@@ -36,7 +36,7 @@ class DealServiceTest {
     private DealRepository dealRepository;
 
     @Test
-    void shouldReturnEmptyDetailsWhenNoRestaurantsInRepository() {
+    void shouldReturnEmptyActiveDealsListWhenNoRestaurantsInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(Collections.emptyList()));
 
@@ -48,7 +48,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnEmptyDetailsWhenMissingRestaurantsInRepository() {
+    void shouldReturnEmptyActiveDealsListWhenMissingRestaurantsInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(null));
 
@@ -60,7 +60,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnEmptyDetailsWhenRestaurantIsMissingDealsInRepository() {
+    void shouldReturnEmptyActiveDealsListWhenRestaurantIsMissingDealsInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant()
@@ -74,7 +74,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnSingleDetailsWhenSingleRestaurantHasActiveLightningDealInRepository() {
+    void shouldReturnSingleEntryInActiveDealsListWhenSingleRestaurantHasActiveLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(createDeal(true))
@@ -92,7 +92,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnEmptyDetailsWhenSingleRestaurantHasNoActiveLightningDealInRepository() {
+    void shouldReturnEmptyActiveDealsListWhenSingleRestaurantHasNoActiveLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(createDeal(true))
@@ -102,11 +102,11 @@ class DealServiceTest {
 
         verify(dealRepository).getRestaurants();
 
-        assertTrue(deals.isEmpty(), "Deals list should be empty when the  repository has no active lightning deals");
+        assertTrue(deals.isEmpty(), "Deals list should be empty when the repository has no active lightning deals");
     }
 
     @Test
-    void shouldReturnSingleDetailsWhenSingleRestaurantHasActiveNoneLightningDealInRepository() {
+    void shouldReturnSingleEntryActiveDealsListWhenSingleRestaurantHasActiveNoneLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(createDeal(false))
@@ -124,7 +124,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnEmptyIntervalWhenWhenNoRestaurantsInRepository() {
+    void shouldReturnEmptyPeakIntervalWhenWhenNoRestaurantsInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of()));
 
@@ -136,7 +136,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnEmptyIntervalWhenWhenRestaurantsIsMissingInRepository() {
+    void shouldReturnEmptyPeakIntervalWhenWhenRestaurantsIsMissingInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(null));
 
@@ -148,7 +148,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnEmptyIntervalWhenWhenRestaurantDealsIsMissingInRepository() {
+    void shouldReturnEmptyPeakIntervalWhenWhenRestaurantDealsIsMissingInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant()
@@ -162,7 +162,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnIntervalWhenSingleRestaurantHasActiveNoneLightningDealInRepository() {
+    void shouldReturnIPeakIntervallWhenSingleRestaurantHasActiveNoneLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(createDeal(false))
@@ -178,7 +178,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnIntervalWhenSingleRestaurantHasMultipleActiveLightningDealInRepository() {
+    void shouldReturnPeakIntervalWhenSingleRestaurantHasMultipleActiveLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(
@@ -198,7 +198,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnIntervalWhenSingleRestaurantHasMultipleActiveUnbalancedLightningDealInRepository() {
+    void shouldReturnPeakIntervalWhenSingleRestaurantHasMultipleActiveUnbalancedLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(
@@ -219,7 +219,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnIntervalWhenMultipleRestaurantHasMultipleActiveUnbalancedLightningDealInRepository() {
+    void shouldReturnPeakIntervalWhenMultipleRestaurantHasMultipleActiveUnbalancedLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(
@@ -246,7 +246,7 @@ class DealServiceTest {
     }
 
     @Test
-    void shouldReturnIntervalWhenSingleRestaurantHasMultipleActiveIsolatedLightningDealInRepository() {
+    void shouldReturnPeakIntervalWhenSingleRestaurantHasMultipleActiveIsolatedLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
                         createRestaurant(
