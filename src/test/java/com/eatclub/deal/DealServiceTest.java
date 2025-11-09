@@ -35,6 +35,40 @@ class DealServiceTest {
     @MockitoBean
     private DealRepository dealRepository;
 
+    private static Restaurant createRestaurant() {
+        return new Restaurant(
+                "restaurantObjectId",
+                "Restaurant Name",
+                "123 Main St",
+                "Suburb",
+                Collections.emptyList(),
+                null,
+                new Time(LocalTime.of(9, 0)),
+                new Time(LocalTime.of(21, 0))
+        );
+    }
+
+    private static Restaurant createRestaurant(Deal... deal) {
+        return new Restaurant(
+                "restaurantObjectId",
+                "Restaurant Name",
+                "123 Main St",
+                "Suburb",
+                Collections.emptyList(),
+                List.of(deal),
+                new Time(LocalTime.of(9, 0)),
+                new Time(LocalTime.of(21, 0))
+        );
+    }
+
+    private static Deal createDeal(boolean lightning) {
+        return createDeal(lightning, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(14, 0)), 10);
+    }
+
+    private static Deal createDeal(boolean lightning, Time open, Time close, int qtyLeft) {
+        return new Deal("dealObjectId", 20, false, lightning, open, close, qtyLeft);
+    }
+
     @Test
     void shouldReturnEmptyActiveDealsListWhenNoRestaurantsInRepository() {
         when(dealRepository.getRestaurants())
@@ -269,39 +303,5 @@ class DealServiceTest {
         assertTrue(interval.isPresent(), "Interval should be present when repository has restaurants with non-lightning deals");
         assertEquals(new Time(LocalTime.of(10, 0)), interval.get().start(), "Interval start time should be 9:00 AM");
         assertEquals(new Time(LocalTime.of(12, 0)), interval.get().end(), "Interval end time should be 9:00 PM");
-    }
-
-    private static Restaurant createRestaurant() {
-        return new Restaurant(
-                "restaurantObjectId",
-                "Restaurant Name",
-                "123 Main St",
-                "Suburb",
-                Collections.emptyList(),
-                null,
-                new Time(LocalTime.of(9, 0)),
-                new Time(LocalTime.of(21, 0))
-        );
-    }
-
-    private static Restaurant createRestaurant(Deal... deal) {
-        return new Restaurant(
-                "restaurantObjectId",
-                "Restaurant Name",
-                "123 Main St",
-                "Suburb",
-                Collections.emptyList(),
-                List.of(deal),
-                new Time(LocalTime.of(9, 0)),
-                new Time(LocalTime.of(21, 0))
-        );
-    }
-
-    private static Deal createDeal(boolean lightning) {
-        return createDeal(lightning, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(14, 0)), 10);
-    }
-
-    private static Deal createDeal(boolean lightning, Time open, Time close, int qtyLeft) {
-        return new Deal("dealObjectId", 20, false, lightning, open, close, qtyLeft);
     }
 }
