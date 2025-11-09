@@ -44,7 +44,33 @@ class DealServiceTest {
 
         verify(dealRepository).getRestaurants();
 
-        assertTrue(deals.isEmpty(), "Deals list should be empty when repository has no restaurants");
+        assertTrue(deals.isEmpty(), "Deals list should be empty when the repository has no restaurants");
+    }
+
+    @Test
+    void shouldReturnEmptyDetailsWhenMissingRestaurantsInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(null));
+
+        List<ActiveDeal> deals = dealService.getActiveDeals(LocalTime.MIDNIGHT);
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(deals.isEmpty(), "Deals list should be empty when the repository has missing restaurants");
+    }
+
+    @Test
+    void shouldReturnEmptyDetailsWhenRestaurantIsMissingDealsInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant()
+                )));
+
+        List<ActiveDeal> deals = dealService.getActiveDeals(LocalTime.MIDNIGHT);
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(deals.isEmpty(), "Deals list should be empty when the repository has missing deals for the restaurant");
     }
 
     @Test
@@ -107,6 +133,32 @@ class DealServiceTest {
         verify(dealRepository).getRestaurants();
 
         assertFalse(interval.isPresent(), "Interval should be empty when repository has no restaurants");
+    }
+
+    @Test
+    void shouldReturnEmptyIntervalWhenWhenRestaurantsIsMissingInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(null));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertFalse(interval.isPresent(), "Interval should be empty when the repository has missing restaurants");
+    }
+
+    @Test
+    void shouldReturnEmptyIntervalWhenWhenRestaurantDealsIsMissingInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant()
+                )));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertFalse(interval.isPresent(), "Interval should be empty when the repository has restaurants with missing deals");
     }
 
     @Test
@@ -217,6 +269,19 @@ class DealServiceTest {
         assertTrue(interval.isPresent(), "Interval should be present when repository has restaurants with non-lightning deals");
         assertEquals(new Time(LocalTime.of(10, 0)), interval.get().start(), "Interval start time should be 9:00 AM");
         assertEquals(new Time(LocalTime.of(12, 0)), interval.get().end(), "Interval end time should be 9:00 PM");
+    }
+
+    private static Restaurant createRestaurant() {
+        return new Restaurant(
+                "restaurantObjectId",
+                "Restaurant Name",
+                "123 Main St",
+                "Suburb",
+                Collections.emptyList(),
+                null,
+                new Time(LocalTime.of(9, 0)),
+                new Time(LocalTime.of(21, 0))
+        );
     }
 
     private static Restaurant createRestaurant(Deal... deal) {

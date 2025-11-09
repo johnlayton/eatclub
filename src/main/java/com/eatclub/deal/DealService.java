@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -32,34 +33,44 @@ public class DealService {
     }
 
     public List<ActiveDeal> getActiveDeals(LocalTime time) {
-        return dealRepository.getRestaurants().restaurants()
-                .stream()
-                .flatMap(restaurant -> restaurant.deals().stream()
-                        .filter(isDealApplicable(restaurant, new Time(time)))
-                        .map(mapDealToActiveDeal(restaurant))
+        return Optional.ofNullable(dealRepository.getRestaurants())
+                .map(DealRepository.Restaurants::restaurants)
+                .map(restaurants -> restaurants
+                        .stream()
+                        .flatMap(restaurant -> Optional.ofNullable(restaurant.deals())
+                                .map(deals -> deals.stream()
+                                        .filter(isDealApplicable(restaurant, new Time(time)))
+                                        .map(mapDealToActiveDeal(restaurant))
+                                )
+                                .orElse(Stream.empty())
+                        )
+                        .toList()
                 )
-                .toList();
+                .orElse(Collections.emptyList());
     }
 
     public Optional<Interval> getPeakInterval() {
-        List<Counter> counters = dealRepository.getRestaurants().restaurants()
-                .stream()
-                .flatMap(restaurant -> restaurant.deals().stream()
-                        .map(mapToInterval(restaurant))
-                        .flatMap(interval -> Stream.of(
-                                new Counter(interval.start, interval.count),
-                                new Counter(interval.end, -interval.count)
-                        ))
+        return Optional.ofNullable(dealRepository.getRestaurants())
+                .map(DealRepository.Restaurants::restaurants)
+                .map(restaurants -> restaurants
+                        .stream()
+                        .flatMap(restaurant -> Optional.ofNullable(restaurant.deals())
+                                .map(deals -> deals.stream()
+                                        .map(mapToInterval(restaurant))
+                                        .flatMap(interval -> Stream.of(
+                                                new Counter(interval.start, interval.count),
+                                                new Counter(interval.end, -interval.count)
+                                        ))
+                                )
+                                .orElse(Stream.empty())
+                        )
+                        .sorted(Comparator
+                                .comparing(Counter::time)
+                                .thenComparing(Counter::val))
+                        .toList()
                 )
-                .sorted(Comparator
-                        .comparing(Counter::time)
-                        .thenComparing(Counter::val))
-                .toList();
-        if (counters.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(find(counters));
-        }
+                .filter(counters -> !counters.isEmpty())
+                .map(this::findPeakInterval);
     }
 
     private Function<Deal, ActiveDeal> mapDealToActiveDeal(Restaurant restaurant) {
@@ -78,7 +89,7 @@ public class DealService {
                 : new Interval(restaurant.open(), restaurant.close(), deal.qtyLeft());
     }
 
-    private Interval find(List<Counter> counters) {
+    private Interval findPeakInterval(List<Counter> counters) {
         int maximumOverlaps = 0;
         int currentOverlaps = 0;
 
@@ -98,10 +109,10 @@ public class DealService {
             }
             maximumOverlaps = Math.max(maximumOverlaps, currentOverlaps);
         }
-        return findMaxAndMerge(maximumOverlaps, intervals);
+        return findMaxIntervalsAndMerge(maximumOverlaps, intervals);
     }
 
-    private Interval findMaxAndMerge(int maximumOverlaps, SortedSet<Interval> intervals) {
+    private Interval findMaxIntervalsAndMerge(int maximumOverlaps, SortedSet<Interval> intervals) {
         final List<Interval> merged = new ArrayList<>(List.of(intervals.removeFirst()));
         intervals.stream()
                 .filter(count -> count.count() == maximumOverlaps)
