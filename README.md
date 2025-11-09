@@ -157,4 +157,3 @@ CREATE INDEX ON eatclub.restaurant (open_time);
 CREATE INDEX ON eatclub.restaurant (close_time);
 CREATE INDEX ON eatclub.cuisine (name);
 ```
-```

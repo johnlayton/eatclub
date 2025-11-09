@@ -3,4 +3,4 @@ spring:
     name: eatclub
 
 deal:
-  repository: local
+  repository: remote
