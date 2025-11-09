@@ -136,7 +136,7 @@ CREATE TABLE eatclub.cuisine (
 
 CREATE TABLE eatclub.deal (
     object_id varchar(36) PRIMARY KEY,
-    restaurant_id varchar(32) NOT NULL REFERENCES eatclub.restaurant(object_id) ON DELETE CASCADE,
+    restaurant_id varchar(36) NOT NULL REFERENCES eatclub.restaurant(object_id) ON DELETE CASCADE,
     discount INTEGER NOT NULL,
     dine_in BOOLEAN NOT NULL DEFAULT FALSE,
     lightning BOOLEAN NOT NULL DEFAULT FALSE,
@@ -146,8 +146,8 @@ CREATE TABLE eatclub.deal (
 );
 
 CREATE TABLE eatclub.restaurant_cuisine (
-    restaurant_id varchar(32) NOT NULL REFERENCES eatclub.restaurant(object_id) ON DELETE CASCADE,
-    cuisine_id varchar(32) NOT NULL REFERENCES eatclub.cuisine(object_id) ON DELETE CASCADE,
+    restaurant_id varchar(36) NOT NULL REFERENCES eatclub.restaurant(object_id) ON DELETE CASCADE,
+    cuisine_id varchar(36) NOT NULL REFERENCES eatclub.cuisine(object_id) ON DELETE CASCADE,
     PRIMARY KEY (restaurant_id, cuisine_id)
 );
 
