@@ -20,16 +20,12 @@ public class DealController {
         this.dealService = dealService;
     }
 
-    @GetMapping(value = "/deals", produces = {
-            MediaType.APPLICATION_JSON_VALUE
-    })
+    @GetMapping(value = "/deals")
     public Deals getDeals(@RequestParam("time") LocalTime time) {
         return new Deals(dealService.getActiveDeals(time));
     }
 
-    @GetMapping(value = "/peak", produces = {
-            MediaType.APPLICATION_JSON_VALUE
-    })
+    @GetMapping(value = "/peak")
     public ResponseEntity<Peak> getPeak() {
         return dealService.getPeakInterval()
                 .map(p -> new ResponseEntity<>(new Peak(p.start(), p.end()), HttpStatus.OK))
