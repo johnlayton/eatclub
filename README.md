@@ -115,3 +115,46 @@ The data is loaded from the provided JSON file into the database at application 
 
 - Indexes would be created on frequently queried fields such as deal open/close times,
   restaurant open/close times, and cuisine names to optimize query performance.
+
+Psudo Schema;
+```sql
+CREATE SCHEMA IF NOT EXISTS eatclub;
+
+CREATE TABLE eatclub.restaurant (
+    object_id varchar(36) PRIMARY KEY,
+    name varchar(255) NOT NULL,
+    address1 varchar(255),
+    suburb varchar(255),
+    open_time TIME NOT NULL,
+    close_time TIME NOT NULL
+);
+
+CREATE TABLE eatclub.cuisine (
+    object_id varchar(36) PRIMARY KEY,
+    name varchar(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE eatclub.deal (
+    object_id varchar(36) PRIMARY KEY,
+    restaurant_id varchar(32) NOT NULL REFERENCES eatclub.restaurant(object_id) ON DELETE CASCADE,
+    discount INTEGER NOT NULL,
+    dine_in BOOLEAN NOT NULL DEFAULT FALSE,
+    lightning BOOLEAN NOT NULL DEFAULT FALSE,
+    open_time TIME,
+    close_time TIME,
+    qty_left INTEGER
+);
+
+CREATE TABLE eatclub.restaurant_cuisine (
+    restaurant_id varchar(32) NOT NULL REFERENCES eatclub.restaurant(object_id) ON DELETE CASCADE,
+    cuisine_id varchar(32) NOT NULL REFERENCES eatclub.cuisine(object_id) ON DELETE CASCADE,
+    PRIMARY KEY (restaurant_id, cuisine_id)
+);
+
+CREATE INDEX ON eatclub.deal (open_time);
+CREATE INDEX ON eatclub.deal (close_time);
+CREATE INDEX ON eatclub.restaurant (open_time);
+CREATE INDEX ON eatclub.restaurant (close_time);
+CREATE INDEX ON eatclub.cuisine (name);
+```
+```
