@@ -27,7 +27,7 @@ public class DealService {
             .reversed();
     
     private static final Comparator<Counter> COUNTER_EARLIEST_CLOSED = Comparator.comparing(Counter::time)
-            .thenComparing(Counter::val)
+            .thenComparing(Counter::val);
     
     private final DealRepository dealRepository;
     private final DealMapper dealMapper;
