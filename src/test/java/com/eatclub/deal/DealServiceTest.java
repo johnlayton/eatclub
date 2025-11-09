@@ -271,7 +271,7 @@ class DealServiceTest {
         assertEquals(new Time(LocalTime.of(12, 0)), interval.get().end(), "Interval end time should be 9:00 PM");
     }
 
-    private static Restaurant createRestaurant() {
+    private Restaurant createRestaurant() {
         return new Restaurant(
                 "restaurantObjectId",
                 "Restaurant Name",
@@ -284,7 +284,7 @@ class DealServiceTest {
         );
     }
 
-    private static Restaurant createRestaurant(Deal... deal) {
+    private Restaurant createRestaurant(Deal... deal) {
         return new Restaurant(
                 "restaurantObjectId",
                 "Restaurant Name",
@@ -297,11 +297,11 @@ class DealServiceTest {
         );
     }
 
-    private static Deal createDeal(boolean lightning) {
+    private Deal createDeal(boolean lightning) {
         return createDeal(lightning, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(14, 0)), 10);
     }
 
-    private static Deal createDeal(boolean lightning, Time open, Time close, int qtyLeft) {
+    private Deal createDeal(boolean lightning, Time open, Time close, int qtyLeft) {
         return new Deal("dealObjectId", 20, false, lightning, open, close, qtyLeft);
     }
 }

@@ -114,7 +114,7 @@ class DealControllerTest {
         verify(dealService).getPeakInterval();
     }
 
-    private static ActiveDeal createActiveDeal() {
+    private ActiveDeal createActiveDeal() {
         return new ActiveDeal(
                 "restaurantObjectId",
                 "Restaurant Name",
