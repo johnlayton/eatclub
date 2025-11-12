@@ -8,7 +8,13 @@ import org.springframework.web.client.RestClient;
 @ConditionalOnProperty(value = "deal.repository", havingValue = "remote")
 public class DealRepositoryRemote implements DealRepository {
 
-    private final RestClient restClient = RestClient.builder().baseUrl("https://eccdn.com.au").build();
+    private final RestClient restClient;
+
+    public DealRepositoryRemote(RestClient.Builder restClientBuilder) {
+        this.restClient = restClientBuilder
+                .baseUrl("https://eccdn.com.au")
+                .build();
+    }
 
     @Override
     public Restaurants getRestaurants() {

@@ -5,6 +5,7 @@ import com.eatclub.deal.DealRepository.Restaurant;
 import com.eatclub.deal.DealRepository.Restaurants;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
@@ -15,7 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest(classes = {
         DealRepositoryRemote.class,
+        DealConfiguration.class
 })
+@AutoConfigureWebClient
 @TestPropertySource(properties = {"deal.repository=remote"})
 class DealRepositoryRemoteTest {
 
