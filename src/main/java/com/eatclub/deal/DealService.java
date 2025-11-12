@@ -12,13 +12,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 public class DealService {
-
-    private static final Comparator<Counter> COUNTER_EARLIEST_CLOSED =
-            Comparator.comparing(Counter::time).thenComparing(Counter::val);
 
     private final DealRepository dealRepository;
     private final DealMapper dealMapper;
@@ -43,8 +41,10 @@ public class DealService {
         return Optional.ofNullable(dealRepository.getRestaurants())
                 .map(restaurants -> restaurants.createStream(toActiveDealStream))
                 .orElse(Stream.empty())
+                .flatMap(ActiveDeal::splitIfRequired)
                 .filter(deal ->
-                        !time.isAfter(deal.restaurantClose().value()) && !time.isBefore(deal.restaurantOpen().value())
+                        !time.isAfter(deal.restaurantClose().value()) &&
+                        !time.isBefore(deal.restaurantOpen().value())
                 )
                 .toList();
     }
@@ -70,12 +70,13 @@ public class DealService {
         return Optional.ofNullable(dealRepository.getRestaurants())
                 .map(restaurants -> restaurants.createStream(toActiveDealStream))
                 .orElse(Stream.empty())
-                .sequential()
-                .flatMap(activeDeal -> Stream.of(
-                        new Counter(activeDeal.restaurantOpen(), activeDeal.qtyLeft()),
-                        new Counter(activeDeal.restaurantClose(), -activeDeal.qtyLeft())
+                .flatMap(ActiveDeal::splitIfRequired)
+                .flatMap(deal -> Stream.of(
+                        new Counter(deal.restaurantOpen(), deal.qtyLeft()),
+                        new Counter(deal.restaurantClose(), -deal.qtyLeft())
                 ))
-                .sorted(COUNTER_EARLIEST_CLOSED)
+                .sorted(Comparator.comparing(Counter::time)
+                        .thenComparing(Comparator.comparing(Counter::val).reversed()))
                 .collect(new IntervalCollector());
     }
 
@@ -92,11 +93,48 @@ public class DealService {
             boolean lightning,
             int qtyLeft
     ) {
+        public Stream<ActiveDeal> splitIfRequired() {
+            if (restaurantClose.value().isBefore(restaurantOpen.value())) {
+                ActiveDeal beforeMidnight = new ActiveDeal(
+                        restaurantObjectId,
+                        restaurantName,
+                        restaurantAddress1,
+                        restaurantSuburb,
+                        restaurantOpen,
+                        new Time(LocalTime.MAX),
+                        dealObjectId,
+                        discount,
+                        dineIn,
+                        lightning,
+                        qtyLeft
+                );
+                ActiveDeal afterMidnight = new ActiveDeal(
+                        restaurantObjectId,
+                        restaurantName,
+                        restaurantAddress1,
+                        restaurantSuburb,
+                        new Time(LocalTime.MIDNIGHT),
+                        restaurantClose,
+                        dealObjectId,
+                        discount,
+                        dineIn,
+                        lightning,
+                        qtyLeft
+                );
+                return Stream.of(beforeMidnight, afterMidnight);
+            } else {
+                return Stream.of(this);
+            }
+        }
     }
 
     public record Interval(Time start, Time end, Integer count) {
         public Duration duration() {
             return Duration.between(start.value(), end.value());
+        }
+        public boolean isAdjacentBefore(Interval other) {
+            return (this.end().value().equals(LocalTime.MAX) && other.start().value().equals(LocalTime.MIDNIGHT))
+                    || this.end().value().equals(other.start().value());
         }
     }
 

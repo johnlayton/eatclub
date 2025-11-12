@@ -13,6 +13,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class IntervalCollector implements Collector<Counter, SortedSet<Interval>, Optional<Interval>> {
 
@@ -25,7 +26,6 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
 
     Counter currentCounter = null;
     int maximumOverlaps = 0;
-    int currentOverlaps = 0;
 
     @Override
     public Supplier<SortedSet<Interval>> supplier() {
@@ -36,13 +36,22 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
     public BiConsumer<SortedSet<Interval>, Counter> accumulator() {
         return (intervals, counter) -> {
             if (currentCounter != null) {
-                currentOverlaps += currentCounter.val();
-                if (!counter.time().equals(currentCounter.time())) {
-                    intervals.add(new Interval(currentCounter.time(), counter.time(), currentOverlaps));
+                if (counter.time().equals(currentCounter.time())) {
+                    currentCounter = new Counter(
+                            currentCounter.time(),
+                            currentCounter.val() + counter.val()
+                    );
+                } else {
+                    intervals.add(new Interval(currentCounter.time(), counter.time(), currentCounter.val()));
+                    maximumOverlaps = Math.max(maximumOverlaps, currentCounter.val());
+                    currentCounter = new Counter(
+                            counter.time(),
+                            currentCounter.val() + counter.val()
+                    );
                 }
+            } else {
+                currentCounter = counter;
             }
-            maximumOverlaps = Math.max(maximumOverlaps, currentOverlaps);
-            currentCounter = counter;
         };
     }
 
@@ -77,8 +86,7 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
                 .filter(count -> count.count() == maximumOverlaps)
                 .forEach(currentInterval -> {
                     Interval lastMergedInterval = merged.getLast();
-                    if (currentInterval.end().value().equals(lastMergedInterval.start().value()) ||
-                            currentInterval.start().value().equals(lastMergedInterval.end().value())) {
+                    if (currentInterval.isAdjacentBefore(lastMergedInterval)) {
                         merged.remove(lastMergedInterval);
                         merged.add(new Interval(currentInterval.start(), lastMergedInterval.end(), currentInterval.count()));
                     } else {
