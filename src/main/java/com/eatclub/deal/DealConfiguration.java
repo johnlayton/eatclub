@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+import static com.fasterxml.jackson.databind.MapperFeature.ACCEPT_CASE_INSENSITIVE_VALUES;
+
 @Configuration
 public class DealConfiguration {
 
@@ -20,6 +22,8 @@ public class DealConfiguration {
             SimpleModule localTimeModule = new SimpleModule();
             localTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern("h:mma")));
             localTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter.ofPattern("h:mma")));
+            builder.featuresToEnable(ACCEPT_CASE_INSENSITIVE_VALUES);
+            builder.featuresToEnable();
             builder.modulesToInstall(new JavaTimeModule());
             builder.modulesToInstall(localTimeModule);
         };
