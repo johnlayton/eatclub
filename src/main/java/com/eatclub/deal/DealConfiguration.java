@@ -23,7 +23,6 @@ public class DealConfiguration {
             localTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern("h:mma")));
             localTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter.ofPattern("h:mma")));
             builder.featuresToEnable(ACCEPT_CASE_INSENSITIVE_VALUES);
-            builder.featuresToEnable();
             builder.modulesToInstall(new JavaTimeModule());
             builder.modulesToInstall(localTimeModule);
         };
