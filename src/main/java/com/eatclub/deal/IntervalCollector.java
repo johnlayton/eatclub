@@ -16,8 +16,8 @@ import java.util.stream.Collector;
 
 public class IntervalCollector implements Collector<Counter, SortedSet<Interval>, Optional<Interval>> {
 
-    Counter current = null;
-    int maximumOverlaps = 0;
+    private Counter current = null;
+    private int maximumOverlaps = 0;
 
     @Override
     public Supplier<SortedSet<Interval>> supplier() {
