@@ -13,7 +13,6 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 public class IntervalCollector implements Collector<Counter, SortedSet<Interval>, Optional<Interval>> {
 
@@ -24,7 +23,7 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
                     .thenComparing(Interval::end)
                     .reversed();
 
-    Counter currentCounter = null;
+    Counter current = null;
     int maximumOverlaps = 0;
 
     @Override
@@ -34,24 +33,19 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
 
     @Override
     public BiConsumer<SortedSet<Interval>, Counter> accumulator() {
-        return (intervals, counter) -> {
-            if (currentCounter != null) {
-                if (counter.time().equals(currentCounter.time())) {
-                    currentCounter = new Counter(
-                            currentCounter.time(),
-                            currentCounter.val() + counter.val()
-                    );
-                } else {
-                    intervals.add(new Interval(currentCounter.time(), counter.time(), currentCounter.val()));
-                    maximumOverlaps = Math.max(maximumOverlaps, currentCounter.val());
-                    currentCounter = new Counter(
-                            counter.time(),
-                            currentCounter.val() + counter.val()
-                    );
-                }
-            } else {
-                currentCounter = counter;
+        return (intervals, next) -> {
+            if (current == null) {
+                current = next;
+                return;
             }
+            int val = current.val() + next.val();
+            if (next.time().equals(current.time())) {
+                current = new Counter(current.time(), val);
+                return;
+            }
+            intervals.add(new Interval(current.time(), next.time(), current.val()));
+            maximumOverlaps = Math.max(maximumOverlaps, current.val());
+            current = new Counter(next.time(), val);
         };
     }
 
