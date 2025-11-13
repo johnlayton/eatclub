@@ -16,19 +16,16 @@ import java.util.stream.Collector;
 
 public class IntervalCollector implements Collector<Counter, SortedSet<Interval>, Optional<Interval>> {
 
-    private static final Comparator<Interval> INTERVAL_LARGEST_LONGEST_LATEST =
-            Comparator.comparingInt(Interval::count)
-                    .thenComparing(Interval::duration)
-                    .thenComparing(Interval::start)
-                    .thenComparing(Interval::end)
-                    .reversed();
-
     Counter current = null;
     int maximumOverlaps = 0;
 
     @Override
     public Supplier<SortedSet<Interval>> supplier() {
-        return () -> new TreeSet<>(INTERVAL_LARGEST_LONGEST_LATEST);
+        return () -> new TreeSet<>(Comparator.comparingInt(Interval::count)
+                .thenComparing(Interval::duration)
+                .thenComparing(Interval::start)
+                .thenComparing(Interval::end)
+                .reversed());
     }
 
     @Override
@@ -74,19 +71,20 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
     }
 
     private Interval findMaxIntervalsAndMerge(SortedSet<Interval> intervals) {
-        final SortedSet<Interval> merged = new TreeSet<>(INTERVAL_LARGEST_LONGEST_LATEST);
-        merged.add(intervals.removeFirst());
-        intervals.stream()
-                .filter(count -> count.count() == maximumOverlaps)
-                .forEach(currentInterval -> {
-                    Interval lastMergedInterval = merged.getLast();
-                    if (currentInterval.isAdjacentBefore(lastMergedInterval)) {
-                        merged.remove(lastMergedInterval);
-                        merged.add(new Interval(currentInterval.start(), lastMergedInterval.end(), currentInterval.count()));
-                    } else {
-                        merged.add(currentInterval);
-                    }
-                });
-        return merged.getFirst();
+        Interval maximunInterval = intervals.removeFirst();
+        Interval currentInterval = maximunInterval;
+        for (Interval interval : intervals) {
+            if (interval.count() == maximumOverlaps) {
+                if (interval.isAdjacentBefore(currentInterval)) {
+                    currentInterval = new Interval(interval.start(), currentInterval.end(), currentInterval.count());
+                } else {
+                    currentInterval = interval;
+                }
+                if (maximunInterval.duration().getSeconds() < currentInterval.duration().getSeconds()) {
+                    maximunInterval = new Interval(currentInterval.start(), currentInterval.end(), currentInterval.count());
+                }
+            }
+        }
+        return maximunInterval;
     }
 }

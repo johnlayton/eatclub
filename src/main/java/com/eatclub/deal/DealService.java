@@ -129,6 +129,9 @@ public class DealService {
 
     public record Interval(Time start, Time end, Integer count) {
         public Duration duration() {
+            if (start.value().isAfter(end.value())) {
+                return Duration.ofHours(24).minus(Duration.between(end.value(), start.value()));
+            }
             return Duration.between(start.value(), end.value());
         }
 
