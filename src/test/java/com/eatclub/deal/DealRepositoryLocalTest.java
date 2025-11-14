@@ -17,7 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest(classes = {
-        DealRepositoryLocal.class
+        DealRepositoryLocal.class,
+        DealConfiguration.class
 })
 @AutoConfigureJson
 @TestPropertySource(properties = {"deal.repository=local"})

@@ -74,6 +74,22 @@ class DealServiceTest {
     }
 
     @Test
+    void shouldReturnActiveDealListWhenRestaurantDealsAreOverMidnightInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(createDeal(true,
+                                new Time(LocalTime.of(22, 0)),
+                                new Time(LocalTime.of(2, 0)), 10))
+                )));
+
+        List<ActiveDeal> deals = dealService.getActiveDeals(LocalTime.of(23, 0));
+
+        verify(dealRepository).getRestaurants();
+
+        assertFalse(deals.isEmpty(), "Deals list should not be empty when the repository has active lightning deals over midnight");
+    }
+
+    @Test
     void shouldReturnSingleEntryInActiveDealsListWhenSingleRestaurantHasActiveLightningDealInRepository() {
         when(dealRepository.getRestaurants())
                 .thenReturn(new Restaurants(List.of(
@@ -270,6 +286,42 @@ class DealServiceTest {
         assertEquals(new Time(LocalTime.of(10, 0)), interval.get().start(), "Interval start time should be 9:00 AM");
         assertEquals(new Time(LocalTime.of(12, 0)), interval.get().end(), "Interval end time should be 9:00 PM");
     }
+
+    @Test
+    void shouldReturnPeakIntervalWhenSingleRestaurantHasMultipleActiveIsolatedLightningDealSpanningMidnightInRepository() {
+        when(dealRepository.getRestaurants())
+                .thenReturn(new Restaurants(List.of(
+                        createRestaurant(
+                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(8, 0)), new Time(LocalTime.of(9, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(11, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(10, 0)), new Time(LocalTime.of(12, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(11, 0)), new Time(LocalTime.of(13, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(16, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(15, 0)), new Time(LocalTime.of(17, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(23, 0)), new Time(LocalTime.of(2, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(23, 0)), new Time(LocalTime.of(2, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(23, 0)), new Time(LocalTime.of(2, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(23, 0)), new Time(LocalTime.of(2, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(23, 0)), new Time(LocalTime.of(2, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(23, 0)), new Time(LocalTime.of(2, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(23, 0)), new Time(LocalTime.of(2, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(23, 0)), new Time(LocalTime.of(2, 0)), 10),
+                                createDeal(true, new Time(LocalTime.of(23, 0)), new Time(LocalTime.of(2, 0)), 10)
+                        )
+                )));
+
+        Optional<Interval> interval = dealService.getPeakInterval();
+
+        verify(dealRepository).getRestaurants();
+
+        assertTrue(interval.isPresent(), "Interval should be present when repository has restaurants with non-lightning deals");
+        assertEquals(new Time(LocalTime.of(23, 0)), interval.get().start(), "Interval start time should be 9:00 AM");
+        assertEquals(new Time(LocalTime.of(2, 0)), interval.get().end(), "Interval end time should be 9:00 PM");
+    }
+
 
     private Restaurant createRestaurant() {
         return new Restaurant(

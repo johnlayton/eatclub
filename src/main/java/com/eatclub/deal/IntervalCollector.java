@@ -16,33 +16,33 @@ import java.util.stream.Collector;
 
 public class IntervalCollector implements Collector<Counter, SortedSet<Interval>, Optional<Interval>> {
 
-    private static final Comparator<Interval> INTERVAL_LARGEST_LONGEST_LATEST =
-            Comparator.comparingInt(Interval::count)
-                    .thenComparing(Interval::duration)
-                    .thenComparing(Interval::start)
-                    .thenComparing(Interval::end)
-                    .reversed();
-
-    Counter currentCounter = null;
-    int maximumOverlaps = 0;
-    int currentOverlaps = 0;
+    private Counter current = null;
+    private int maximumOverlaps = 0;
 
     @Override
     public Supplier<SortedSet<Interval>> supplier() {
-        return () -> new TreeSet<>(INTERVAL_LARGEST_LONGEST_LATEST);
+        return () -> new TreeSet<>(Comparator.comparingInt(Interval::count)
+                .thenComparing(Interval::duration)
+                .thenComparing(Interval::start)
+                .thenComparing(Interval::end)
+                .reversed());
     }
 
     @Override
     public BiConsumer<SortedSet<Interval>, Counter> accumulator() {
-        return (intervals, counter) -> {
-            if (currentCounter != null) {
-                currentOverlaps += currentCounter.val();
-                if (!counter.time().equals(currentCounter.time())) {
-                    intervals.add(new Interval(currentCounter.time(), counter.time(), currentOverlaps));
-                }
+        return (intervals, next) -> {
+            if (current == null) {
+                current = next;
+                return;
             }
-            maximumOverlaps = Math.max(maximumOverlaps, currentOverlaps);
-            currentCounter = counter;
+            int val = current.val() + next.val();
+            if (next.time().equals(current.time())) {
+                current = new Counter(current.time(), val);
+                return;
+            }
+            intervals.add(new Interval(current.time(), next.time(), current.val()));
+            maximumOverlaps = Math.max(maximumOverlaps, current.val());
+            current = new Counter(next.time(), val);
         };
     }
 
@@ -71,20 +71,20 @@ public class IntervalCollector implements Collector<Counter, SortedSet<Interval>
     }
 
     private Interval findMaxIntervalsAndMerge(SortedSet<Interval> intervals) {
-        final SortedSet<Interval> merged = new TreeSet<>(INTERVAL_LARGEST_LONGEST_LATEST);
-        merged.add(intervals.removeFirst());
-        intervals.stream()
-                .filter(count -> count.count() == maximumOverlaps)
-                .forEach(currentInterval -> {
-                    Interval lastMergedInterval = merged.getLast();
-                    if (currentInterval.end().value().equals(lastMergedInterval.start().value()) ||
-                            currentInterval.start().value().equals(lastMergedInterval.end().value())) {
-                        merged.remove(lastMergedInterval);
-                        merged.add(new Interval(currentInterval.start(), lastMergedInterval.end(), currentInterval.count()));
-                    } else {
-                        merged.add(currentInterval);
-                    }
-                });
-        return merged.getFirst();
+        Interval maximunInterval = intervals.removeFirst();
+        Interval currentInterval = maximunInterval;
+        for (Interval interval : intervals) {
+            if (interval.count() == maximumOverlaps) {
+                if (interval.isAdjacentBefore(currentInterval)) {
+                    currentInterval = new Interval(interval.start(), currentInterval.end(), currentInterval.count());
+                } else {
+                    currentInterval = interval;
+                }
+                if (maximunInterval.duration().getSeconds() < currentInterval.duration().getSeconds()) {
+                    maximunInterval = new Interval(currentInterval.start(), currentInterval.end(), currentInterval.count());
+                }
+            }
+        }
+        return maximunInterval;
     }
 }

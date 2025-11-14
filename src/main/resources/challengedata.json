@@ -190,6 +190,34 @@
           "qtyLeft": "7"
         }
       ]
+    },
+    {
+      "objectId": "178CC02C-69F5-5D90-FF67-84B135B19103",
+      "name": "Bobs Burgers",
+      "address1": "34 Saint Kilda Road",
+      "suburb": "Saint Kilda",
+      "cuisines": [
+        "American"
+      ],
+      "imageLink": "...",
+      "open": "8:00pm",
+      "close": "2:00am",
+      "deals": [
+        {
+          "objectId": "B5913CD1-0550-40C7-AFC3-7D46D26B01BF",
+          "discount": "30",
+          "dineIn": "false",
+          "lightning": "false",
+          "qtyLeft": "8"
+        },
+        {
+          "objectId": "B5713CD1-1361-40C7-AFC3-7D46D26B00BF",
+          "discount": "25",
+          "dineIn": "false",
+          "lightning": "false",
+          "qtyLeft": "7"
+        }
+      ]
     }
   ]
 }
